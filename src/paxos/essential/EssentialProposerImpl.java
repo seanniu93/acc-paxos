@@ -34,7 +34,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 
         proposalID.incrementNumber();
 
-        messenger.sendPrepare(proposalID);
+        messenger.broadcastPrepare(proposalID, proposerUID);
     }
 
     @Override
@@ -56,9 +56,20 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 
         if (promisesReceived.size() == quorumSize)
             if (proposedValue != null)
-                messenger.sendAccept(this.proposalID, proposedValue);
+                messenger.sendAccept(this.proposerUID, proposalID, proposedValue);
     }
-
+/*
+    public int prepare_promise(ProposalID proposalID, ProposalID prevAcceptedID, Object prevAcceptedValue) {
+        int numPromise = 0;
+        String fromUID;
+        prepare();
+        while(true) {
+            for (int machineNum = 0; machineNum < quorumSize; machineNum++) {
+                receivePromise(Integer.toString(machineNum), proposalID, prevAcceptedID, prevAcceptedValue);
+            }
+        }
+    }
+*/
     public EssentialMessenger getMessenger() {
         return messenger;
     }
@@ -87,8 +98,11 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         return promisesReceived.size();
     }
 
+
+
     public void run() {
-        prepare();
+        proposedValue = new Integer(1);
+        setProposal(proposedValue);
         while(true)
         {
             prepare();

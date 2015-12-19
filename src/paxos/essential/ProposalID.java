@@ -7,6 +7,11 @@ public class ProposalID {
     private int          number;
     private final String uid;
 
+    public ProposalID() {
+        this.number = 0;
+        this.uid    = Integer.toString(0);
+    }
+
     public ProposalID(int number, String uid) {
         this.number = number;
         this.uid    = uid;
