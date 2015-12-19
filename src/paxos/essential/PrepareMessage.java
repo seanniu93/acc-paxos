@@ -4,11 +4,11 @@ package paxos.essential;
  * Created by Administrator on 12/18/2015.
  */
 public class PrepareMessage {
-    String fromUID;
+    String proposerUID;
     ProposalID proposalID;
-    PrepareMessage(String fromUID, ProposalID proposalID)
+    PrepareMessage(String proposerUID, ProposalID proposalID)
     {
-        this.fromUID = fromUID;
+        this.proposerUID = proposerUID;
         this.proposalID = proposalID;
     }
 }

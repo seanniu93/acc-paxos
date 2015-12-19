@@ -24,15 +24,15 @@ public class EssentialMessengerImpl implements EssentialMessenger {
         }
     }
 
-    public void sendPromise(String proposerUID, ProposalID proposalID, ProposalID previousID, Object acceptedValue) {
+    public void sendPromise(String proposerUID, String acceptorUID, ProposalID proposalID, ProposalID previousID, Object acceptedValue) {
         int proposerNum = Integer.valueOf(proposerUID);
-        PromiseMessage promiseMessage = new PromiseMessage(proposerUID, proposalID, previousID, acceptedValue);
+        PromiseMessage promiseMessage = new PromiseMessage(acceptorUID, proposalID, previousID, acceptedValue);
         messagePool.promPool.get(proposerNum).add(promiseMessage);
     }
 
     public void sendAccept(String fromUID, ProposalID proposalID, Object proposalValue) {
         for(int acceptorNum=0; acceptorNum < quorumSize; acceptorNum++) {
-            AcceptMessage acceptMessage = new AcceptMessage(fromUID, proposalID, proposalValue);
+            AcceptMessage acceptMessage = new AcceptMessage(proposalID, proposalValue);
             messagePool.acceptPool.get(acceptorNum).add(acceptMessage);
         }
     }
@@ -44,7 +44,58 @@ public class EssentialMessengerImpl implements EssentialMessenger {
         }
     }
 
-    public void onResolution(ProposalID proposalID, Object value) {
+    public PrepareMessage getPrepareMessage(String acceptorUID)
+    {
+        int uid = Integer.valueOf(acceptorUID);
+        if(messagePool.prepPool.get(uid).isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            return messagePool.prepPool.get(uid).remove(0);
+        }
+    }
 
+
+    public PromiseMessage getPromiseMessage(String proposerUID) {
+        int uid = Integer.valueOf(proposerUID);
+        if(messagePool.promPool.get(uid).isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            return messagePool.promPool.get(uid).remove(0);
+        }
+    }
+
+    public AcceptMessage getAcceptMessage(String acceptorUID) {
+        int uid = Integer.valueOf(acceptorUID);
+        if(messagePool.acceptPool.get(uid).isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            return messagePool.acceptPool.get(uid).remove(0);
+        }
+    }
+
+    public AcceptedMessage getAcceptedMessage(String learnerUID) {
+        int uid = Integer.valueOf(learnerUID);
+        if(messagePool.acceptedPool.get(uid).isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            return messagePool.acceptedPool.get(uid).remove(0);
+        }
+    }
+
+
+    public void onResolution(String learnerUID, ProposalID proposalID, Object value) {
+        System.out.println("Learner "+learnerUID+" learned value: "+value+"from proposal "+proposalID+'\n');
     }
 }

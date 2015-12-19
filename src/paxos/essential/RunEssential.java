@@ -8,30 +8,28 @@ public class RunEssential {
     /**
      * Created by Administrator on 12/17/2015.
      */
-    static int quoramSize = 5;
+    static int quorumSize = 5;
+    static MessagePool messagePool = new MessagePool(quorumSize);
+
     public static void main(String[] args) {
         System.out.println("Hello, World!");
 
-        for (int machineNum = 0; machineNum < quoramSize ; quoramSize++) {
-            EssentialMessenger messenger = new EssentialMessengerImpl();
-            String proposerUID = Integer.toString(machineNum);
-            EssentialProposerImpl proposer = new EssentialProposerImpl(messenger, proposerUID, quoramSize);
+        for (int machineNum = 0; machineNum < quorumSize ; machineNum++) {
+            EssentialMessenger messenger = new EssentialMessengerImpl(messagePool, quorumSize);
+            EssentialProposerImpl proposer = new EssentialProposerImpl(messenger, Integer.toString(machineNum), quorumSize);
             proposer.start();
         }
 
-        for (int machineNum = 0; machineNum < quoramSize ; quoramSize++) {
-            EssentialMessenger messenger = new EssentialMessengerImpl();
-            EssentialAcceptorImpl acceptor = new EssentialAcceptorImpl(messenger);
+        for (int machineNum = 0; machineNum < quorumSize ; machineNum++) {
+            EssentialMessenger messenger = new EssentialMessengerImpl(messagePool, quorumSize);
+            EssentialAcceptorImpl acceptor = new EssentialAcceptorImpl(messenger, Integer.toString(machineNum), quorumSize);
             acceptor.start();
         }
 
-        for (int machineNum = 0; machineNum < quoramSize ; quoramSize++) {
-            EssentialMessenger messenger = new EssentialMessengerImpl();
-            EssentialLearnerImpl learner = new EssentialLearnerImpl(messenger, quoramSize);
+        for (int machineNum = 0; machineNum < quorumSize ; machineNum++) {
+            EssentialMessenger messenger = new EssentialMessengerImpl(messagePool, quorumSize);
+            EssentialLearnerImpl learner = new EssentialLearnerImpl( messenger,Integer.toString(machineNum), quorumSize);
             learner.start();
         }
-
-
-
     }
 }

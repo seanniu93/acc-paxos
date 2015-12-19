@@ -23,10 +23,12 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
     private HashMap<String,  ProposalID>  acceptors       = new HashMap<String, ProposalID>();
     private Object                        finalValue      = null;
     private ProposalID                    finalProposalID = null;
+    private String                        learnerUID;
 
-    public EssentialLearnerImpl( EssentialMessenger messenger, int quorumSize ) {
+    public EssentialLearnerImpl( EssentialMessenger messenger, String learnerUID , int quorumSize) {
         this.messenger  = messenger;
         this.quorumSize = quorumSize;
+        this.learnerUID = learnerUID;
     }
 
     @Override
@@ -69,7 +71,7 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
             proposals.clear();
             acceptors.clear();
 
-            messenger.onResolution(proposalID, acceptedValue);
+            messenger.onResolution(learnerUID, proposalID, acceptedValue);
         }
     }
 
@@ -88,6 +90,19 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
     }
 
     public void run() {
-
+        long endTimeMillis = System.currentTimeMillis() + 10000;
+        AcceptedMessage acceptedMessage;
+        while(true)
+        {
+            acceptedMessage = messenger.getAcceptedMessage(learnerUID);
+            if(acceptedMessage!=null)
+            {
+                receiveAccepted(acceptedMessage.fromUID, acceptedMessage.proposalID, acceptedMessage.acceptedValue);
+            }
+            if (System.currentTimeMillis() > endTimeMillis) {
+                // do some clean-up
+                return;
+            }
+        }
     }
 }

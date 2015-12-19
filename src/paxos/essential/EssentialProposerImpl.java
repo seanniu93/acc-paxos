@@ -1,6 +1,9 @@
 package paxos.essential;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by Administrator on 12/18/2015.
@@ -38,13 +41,13 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     }
 
     @Override
-    public void receivePromise(String fromUID, ProposalID proposalID,
+    public void receivePromise(String acceptorUID, ProposalID proposalID,
                                ProposalID prevAcceptedID, Object prevAcceptedValue) {
 
-        if ( !proposalID.equals(this.proposalID) || promisesReceived.contains(fromUID) )
+        if ( !proposalID.equals(this.proposalID) || promisesReceived.contains(acceptorUID) )
             return;
 
-        promisesReceived.add( fromUID );
+        promisesReceived.add( acceptorUID );
 
         if (lastAcceptedID == null || prevAcceptedID.isGreaterThan(lastAcceptedID))
         {
@@ -54,9 +57,12 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
                 proposedValue = prevAcceptedValue;
         }
 
-        if (promisesReceived.size() == quorumSize)
+        if (promisesReceived.size() == quorumSize) {
             if (proposedValue != null)
                 messenger.sendAccept(this.proposerUID, proposalID, proposedValue);
+            else
+                messenger.sendAccept(this.proposerUID, proposalID, getRandProposal());
+        }
     }
 /*
     public int prepare_promise(ProposalID proposalID, ProposalID prevAcceptedID, Object prevAcceptedValue) {
@@ -98,14 +104,45 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         return promisesReceived.size();
     }
 
-
-
+    public Integer getRandProposal()
+    {
+        Integer newValue;
+        newValue = new Integer(ThreadLocalRandom.current().nextInt(10, 10 + 1));
+        return newValue;
+    }
+/*
+    Object getBestVal(ArrayList<PromiseMessage> promises) {
+        ProposalID maxproposal = new ProposalID(0, new Integer(0).toString());
+        Object bestVal = null;
+        for(int i = 0; i < promises.size(); i++)
+        {
+            if(promises.get(i).proposalID.isGreaterThan(maxproposal))
+            {
+                maxproposal = promises.get(i).prevAcceptedID;
+                bestVal = promises.get(i).prevAcceptedValue;
+            }
+        }
+        return bestVal;
+    }
+*/
     public void run() {
-        proposedValue = new Integer(1);
-        setProposal(proposedValue);
+        //ArrayList<PromiseMessage> promises = new ArrayList<PromiseMessage>();
+        prepare();
+        long endTimeMillis = System.currentTimeMillis() + 10000;
+        PromiseMessage promiseMessage;
         while(true)
         {
-            prepare();
+            if((promiseMessage = messenger.getPromiseMessage(proposerUID))!=null)
+            {
+                receivePromise(promiseMessage.fromUID, promiseMessage.proposalID, promiseMessage.prevAcceptedID, promiseMessage.prevAcceptedValue);
+                System.out.println("Received Promise "+promiseMessage.fromUID+" "+promiseMessage.prevAcceptedValue+" "+ promiseMessage.prevAcceptedID + " "+promiseMessage.proposalID);
+            }
+            if (System.currentTimeMillis() > endTimeMillis) {
+                // do some clean-up
+                return;
+            }
         }
     }
+
+
 }
