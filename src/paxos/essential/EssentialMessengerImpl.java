@@ -96,6 +96,7 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 
 
     public void onResolution(String learnerUID, ProposalID proposalID, Object value) {
-        System.out.println("Learner "+learnerUID+" learned value: "+value+"from proposal "+proposalID+'\n');
+        System.out.println("Learner "+learnerUID+" learned value: "+value+" from machine: "+proposalID.getUID()+ "proposal: "+ proposalID.getNumber()+'\n');
+
     }
 }

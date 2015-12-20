@@ -8,7 +8,7 @@ public class RunEssential {
     /**
      * Created by Administrator on 12/17/2015.
      */
-    static int quorumSize = 5;
+    static int quorumSize = 11;
     static MessagePool messagePool = new MessagePool(quorumSize);
 
     public static void main(String[] args) {

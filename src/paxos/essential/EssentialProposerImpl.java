@@ -2,6 +2,7 @@ package paxos.essential;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -14,37 +15,69 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     protected final int           quorumSize;
 
     protected ProposalID          proposalID;
-    protected Object              proposedValue      = null;
+    protected Object              proposedValue;
     protected ProposalID          lastAcceptedID     = null;
     protected HashSet<String>     promisesReceived   = new HashSet<String>();
+
+    protected boolean leader = false;
+    protected boolean active = true;
+
+    public void receiveFromClients(ClientCommand command)
+    {
+        if(leader) //respond to the client request
+        {
+            proposalID.incrementNumber();
+            messenger.sendAccept(proposerUID, proposalID, proposedValue);
+        }
+        else    //forward the message to leader for processing
+        {
+            //messenger.send_leader(proposedValue);
+        }
+    }
 
     public EssentialProposerImpl(EssentialMessenger messenger, String proposerUID, int quorumSize) {
         this.messenger   = messenger;
         this.proposerUID = proposerUID;
         this.quorumSize  = quorumSize;
         this.proposalID  = new ProposalID(0, proposerUID);
+        this.leader = false;
     }
 
     @Override
     public void setProposal(Object value) {
         if ( proposedValue == null )
             proposedValue = value;
+        if (leader && active)
+            messenger.sendAccept(proposerUID, proposalID, proposedValue);
+
     }
 
     @Override
     public void prepare() {
+        leader = false;
+
         promisesReceived.clear();
 
         proposalID.incrementNumber();
 
-        messenger.broadcastPrepare(proposalID, proposerUID);
+        if(active) {
+            messenger.broadcastPrepare(proposalID, proposerUID);
+        }
+    }
+
+    public void resendAccept() {
+        if(leader && active && proposedValue != null)
+        {
+            messenger.sendAccept(proposerUID, proposalID, proposedValue);
+
+        }
     }
 
     @Override
     public void receivePromise(String acceptorUID, ProposalID proposalID,
                                ProposalID prevAcceptedID, Object prevAcceptedValue) {
 
-        if ( !proposalID.equals(this.proposalID) || promisesReceived.contains(acceptorUID) )
+        if ( leader || !proposalID.equals(this.proposalID) || promisesReceived.contains(acceptorUID) )
             return;
 
         promisesReceived.add( acceptorUID );
@@ -57,7 +90,8 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
                 proposedValue = prevAcceptedValue;
         }
 
-        if (promisesReceived.size() == quorumSize) {
+        if (promisesReceived.size() > quorumSize/2) {
+            leader = true;
             if (proposedValue != null)
                 messenger.sendAccept(this.proposerUID, proposalID, proposedValue);
             else
@@ -107,7 +141,8 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     public Integer getRandProposal()
     {
         Integer newValue;
-        newValue = new Integer(ThreadLocalRandom.current().nextInt(10, 10 + 1));
+        newValue = new Integer(ThreadLocalRandom.current().nextInt(10, 10 + 10));
+        System.out.println("Newly Proposed Value: " + newValue + "\n\n");
         return newValue;
     }
 /*
@@ -135,7 +170,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
             if((promiseMessage = messenger.getPromiseMessage(proposerUID))!=null)
             {
                 receivePromise(promiseMessage.fromUID, promiseMessage.proposalID, promiseMessage.prevAcceptedID, promiseMessage.prevAcceptedValue);
-                System.out.println("Received Promise "+promiseMessage.fromUID+" "+promiseMessage.prevAcceptedValue+" "+ promiseMessage.prevAcceptedID + " "+promiseMessage.proposalID);
+                //System.out.println("Received Promise "+promiseMessage.fromUID+" "+promiseMessage.prevAcceptedValue+" "+ promiseMessage.prevAcceptedID + " "+promiseMessage.proposalID);
             }
             if (System.currentTimeMillis() > endTimeMillis) {
                 // do some clean-up

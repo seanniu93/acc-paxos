@@ -65,9 +65,9 @@ public class EssentialAcceptorImpl extends Thread implements EssentialAcceptor {
         while(true)
         {
             if((prepareMessage = messenger.getPrepareMessage(acceptorUID))!=null) {
-                System.out.println("Received Prepare: \n");
-                System.out.println("prepare proposerUID: " + prepareMessage.proposerUID + "\n");
-                System.out.println("prepare proposalID: " + prepareMessage.proposalID + "\n");
+                //System.out.println("Received Prepare: \n");
+                //System.out.println("prepare proposerUID: " + prepareMessage.proposerUID + "\n");
+                //System.out.println("prepare proposalID: " + prepareMessage.proposalID + "\n");
                 receivePrepare(prepareMessage.proposerUID, prepareMessage.proposalID);
             }
             if((acceptMessage = messenger.getAcceptMessage(acceptorUID))!=null) {

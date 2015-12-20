@@ -1,6 +1,9 @@
 package paxos.essential;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+
 /**
  * Created by Administrator on 12/18/2015.
  */
@@ -24,11 +27,13 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
     private Object                        finalValue      = null;
     private ProposalID                    finalProposalID = null;
     private String                        learnerUID;
+    private Hashtable                     disk;
 
     public EssentialLearnerImpl( EssentialMessenger messenger, String learnerUID , int quorumSize) {
         this.messenger  = messenger;
         this.quorumSize = quorumSize;
         this.learnerUID = learnerUID;
+        this.disk = new Hashtable();
     }
 
     @Override
@@ -65,12 +70,13 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
         thisProposal.acceptCount    += 1;
         thisProposal.retentionCount += 1;
 
-        if (thisProposal.acceptCount == quorumSize) {
+        if (thisProposal.acceptCount > quorumSize/2) {
             finalProposalID = proposalID;
             finalValue      = acceptedValue;
             proposals.clear();
             acceptors.clear();
-
+            //ClientCommand command = ClientCommand.class.cast(acceptedValue);
+            //disk.put(command.key, command.value);
             messenger.onResolution(learnerUID, proposalID, acceptedValue);
         }
     }
