@@ -6,9 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ConnectException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.ArrayList;
 
 /**
@@ -27,7 +25,12 @@ public class RunEssential{
 
     public static void main(String[] args) {
         System.out.println("Hello, World!");
-        String myHostName = "frog.zoo.cs.yale.edu";
+        String myHostName = null;
+        try {
+            myHostName = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
         Integer myport = 3333;
 
         ArrayList<String> hostName = new ArrayList<String>();
