@@ -2,8 +2,7 @@ package netcode;
 
 import paxos.essential.*;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -12,58 +11,31 @@ import java.net.Socket;
 public class ClientHandler extends Thread{
 
     Socket clientSocket;
-    EssentialMessengerImpl essentialMessengerImpl;
-    ObjectInputStream objectInputStream;
-    String hostName;
-    public ClientHandler(Socket clientSocket, EssentialMessengerImpl essentialMessengerImpl, String hostName) throws IOException {
+    public ClientHandler(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
-        this.essentialMessengerImpl = essentialMessengerImpl;
-        this.hostName = hostName;
-        objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
-    public void run ()
-    {
-        Object o = null;
+    public void run () {
+        System.out.println("My recerived from client");
+        PrintWriter out;
+        BufferedReader in;
+
         try {
-            o = objectInputStream.readObject();
-            System.out.println("Read object: "+o);
-        } catch (IOException e) {
-            e.printStackTrace();
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(
+                    new InputStreamReader(clientSocket.getInputStream()));
 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            String fromClient;
+            out.println("I'm the best server!\n");
+            while ((fromClient = in.readLine()) != null) {
+                System.out.println("Client: " + fromClient);
+                if (fromClient.equals("Bye")) {
+                    break;
+                }
+            }
         }
-
-        if(o == null)
+        catch (IOException e)
         {
-            System.out.println("Received Message from client is null");
-        }
-        else
-        {
-            if(o instanceof PrepareMessage)
-            {
-                essentialMessengerImpl.addPrepareMessage((PrepareMessage)o, hostName);
-            }
-            else if(o instanceof PromiseMessage)
-            {
-
-            }
-            else if(o instanceof AcceptMessage)
-            {
-
-            }
-            else if(o instanceof AcceptedMessage)
-            {
-
-            }
-            else if(o instanceof String)
-            {
-                System.out.println("Received obkject from client as a string: "+o+"\n");
-            }
-            else
-            {
-                System.out.println("Unknown type object sent from client from client\n");
-            }
+            System.out.println("IO Exception in server\n");
         }
     }
 }

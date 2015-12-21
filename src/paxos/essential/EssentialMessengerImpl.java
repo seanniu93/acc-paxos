@@ -106,6 +106,7 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 
 
     public PromiseMessage getPromiseMessage(String proposerHost) {
+        //System.out.println("@@@@@@@@@@@ " + proposerHost);
         int uid = locationInfo.hostName.indexOf(proposerHost);
         if(messagePool.promPool.get(uid).isEmpty())
         {

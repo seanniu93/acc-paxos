@@ -14,24 +14,24 @@ public class MessagePool {
     ArrayList<CopyOnWriteArrayList<AcceptedMessage>> acceptedPool;
 
 
-    MessagePool(int quorumSize) {
+    public MessagePool(int quorumSize) {
         this.quorumSize = quorumSize;
-        this.prepPool= new ArrayList<CopyOnWriteArrayList<PrepareMessage>>(quorumSize);
+        this.prepPool= new ArrayList<>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
             prepPool.add(new CopyOnWriteArrayList<>());
         }
-        this.promPool = new ArrayList<CopyOnWriteArrayList<PromiseMessage>>(quorumSize);
+        this.promPool = new ArrayList<>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
             promPool.add(new CopyOnWriteArrayList<>());
         }
-        this.acceptPool = new ArrayList<CopyOnWriteArrayList<AcceptMessage>>(quorumSize);
+        this.acceptPool = new ArrayList<>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
             acceptPool.add(new CopyOnWriteArrayList<>());
         }
-        this.acceptedPool = new ArrayList<CopyOnWriteArrayList<AcceptedMessage>>(quorumSize);
+        this.acceptedPool = new ArrayList<>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
             acceptedPool.add(new CopyOnWriteArrayList<>());

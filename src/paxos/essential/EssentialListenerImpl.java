@@ -31,6 +31,7 @@ public class EssentialListenerImpl extends Thread implements EssentialListner{
         catch (IOException e)
         {
             System.out.println("Create serverSocket failed in Node with error "+e+"\n");
+            e.printStackTrace();
         }
 
         while(true)

@@ -1,9 +1,11 @@
 package paxos.essential;
 
+import java.io.Serializable;
+
 /**
  * Created by Administrator on 12/17/2015.
  */
-public class ProposalID {
+public class ProposalID implements Serializable{
     private int          number;
     private final String uid;
 
