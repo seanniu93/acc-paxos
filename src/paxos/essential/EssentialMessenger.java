@@ -9,13 +9,13 @@ public interface EssentialMessenger {
 
 
 
-    public void broadcastPrepare(ProposalID proposalID, String proposerHost, LocationInfo locationInfo);
+    public void broadcastPrepare(ProposalID proposalID, String proposerHost);
 
     public void sendPromise(String acceptorHost, ProposalID proposalID, ProposalID previousID, Object acceptedValue, String proposerHost, int portNumber);
 
-    public void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue, LocationInfo locationInfo);
+    public void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue);
 
-    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue, LocationInfo locationInfo);
+    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue);
 
     public void onResolution(String learnerUID, ProposalID proposalID, Object value);
 

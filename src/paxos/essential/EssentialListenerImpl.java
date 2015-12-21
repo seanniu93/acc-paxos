@@ -12,8 +12,7 @@ public class EssentialListenerImpl extends Thread implements EssentialListner{
     String hostName;
     EssentialMessengerImpl essentialMessengerImpl;
 
-    EssentialListenerImpl(int portNumber, String hostName, EssentialMessengerImpl essentialMessengerImpl)
-    {
+    EssentialListenerImpl(int portNumber, String hostName, EssentialMessengerImpl essentialMessengerImpl) {
         this.portNumber = portNumber;
         this.hostName = hostName;
         this.essentialMessengerImpl = essentialMessengerImpl;
@@ -24,8 +23,7 @@ public class EssentialListenerImpl extends Thread implements EssentialListner{
         startListening();
     }
 
-    public void startListening()
-    {
+    public void startListening() {
         ServerSocket serverSocket = null;
         try{
             serverSocket = new ServerSocket(portNumber);

@@ -17,25 +17,24 @@ public class EssentialMessengerImpl implements EssentialMessenger {
     int quorumSize;
     LocationInfo locationInfo;
 
-    public EssentialMessengerImpl(MessagePool messagePool, int quorumSize, LocationInfo locationInfo)
-    {
+    public EssentialMessengerImpl(MessagePool messagePool, int quorumSize, LocationInfo locationInfo) {
         this.messagePool = messagePool;
         this.quorumSize = quorumSize;
         this.locationInfo = locationInfo;
     }
 
-    public void broadcastPrepare(ProposalID proposalID, String proposerHost, LocationInfo locationInfo) {
+    public void broadcastPrepare(ProposalID proposalID, String proposerHost) {
         PrepareMessage prepareMessage = new PrepareMessage(proposerHost, proposalID);
         for(int i = 0; i < locationInfo.portNumber.size(); i++)
         {
-            BufferedReader in;
-            try {
-                Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
-                ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
-                outputStream.writeObject(prepareMessage);
-            }
-            catch(IOException e) {
-                System.out.println("IO Exception while broadcasting prepare: " + e + "\n");
+            synchronized(locationInfo.hostName.get(i)) {
+                try (Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
+                    ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream())) {
+                    outputStream.writeObject(prepareMessage);
+                }
+                catch(IOException e) {
+                    System.out.println("IO Exception while broadcasting prepare: " + e + "\n");
+                }
             }
             System.out.println("Broadcasting Prepare Message to host: " + locationInfo.hostName.get(i) + ", port:" + locationInfo.portNumber.get(i) + "\n");
         }
@@ -44,43 +43,43 @@ public class EssentialMessengerImpl implements EssentialMessenger {
     public void sendPromise(String acceptorHost, ProposalID proposalID, ProposalID previousID, Object acceptedValue, String proposerHost, int portNumber) {
         //int proposerNum = Integer.valueOf(proposerUID);
         PromiseMessage promiseMessage = new PromiseMessage(acceptorHost, proposalID, previousID, acceptedValue);
-        try {
-            Socket socketToServer = new Socket(proposerHost, portNumber);
-            ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
-            outputStream.writeObject(promiseMessage);
-        }
-        catch(IOException e) {
-            System.out.println("IO Exception while sending promise: " + e + "\n");
+        int index = locationInfo.hostName.indexOf(proposerHost);
+        synchronized(locationInfo.hostName.get(index)) {
+            try (Socket socketToServer = new Socket(proposerHost, portNumber);
+                 ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream())) {
+                outputStream.writeObject(promiseMessage);
+            } catch (IOException e) {
+                System.out.println("IO Exception while sending promise: " + e + "\n");
+            }
         }
         System.out.println("Sending Promise Message to host: " + proposerHost + ", port:" + portNumber + "\n");
     }
 
-    public void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue, LocationInfo locationInfo) {
+    public void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue) {
+        AcceptMessage acceptMessage = new AcceptMessage(proposalID, proposalValue);
         for(int i = 0; i < locationInfo.portNumber.size(); i++) {
-            AcceptMessage acceptMessage = new AcceptMessage(proposalID, proposalValue);
-            try {
-                Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
-                ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
-                outputStream.writeObject(acceptMessage);
-            }
-            catch(IOException e) {
-                System.out.println("IO Exception while sending accept: " + e + "\n");
+            synchronized(locationInfo.hostName.get(i)) {
+                try (Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
+                     ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream())) {
+                    outputStream.writeObject(acceptMessage);
+                } catch (IOException e) {
+                    System.out.println("IO Exception while sending accept: " + e + "\n");
+                }
             }
             System.out.println("Sending Promise Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
         }
     }
 
-    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue, LocationInfo locationInfo) {
+    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue) {
+        AcceptedMessage acceptedMessage = new AcceptedMessage(fromUID, proposalID, acceptedValue);
         for(int i=0; i < quorumSize; i++) {
-            AcceptedMessage acceptedMessage = new AcceptedMessage(fromUID, proposalID, acceptedValue);
-            messagePool.acceptedPool.get(i).add(acceptedMessage);
-            try {
-                Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
-                ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
-                outputStream.writeObject(acceptedMessage);
-            }
-            catch(IOException e) {
-                System.out.println("IO Exception while sending accepted: " + e + "\n");
+            synchronized(locationInfo.hostName.get(i)) {
+                try (Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
+                     ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream())) {
+                    outputStream.writeObject(acceptedMessage);
+                } catch (IOException e) {
+                    System.out.println("IO Exception while sending accepted: " + e + "\n");
+                }
             }
             System.out.println("Sending Promise Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
         }

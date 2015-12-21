@@ -38,7 +38,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         if(leader) //respond to the client request
         {
             proposalID.incrementNumber();
-            messenger.sendAccept(proposerHost, proposalID, proposedValue, locationInfo);
+            messenger.sendAccept(proposerHost, proposalID, proposedValue);
         }
         else    //forward the message to leader for processing
         {
@@ -52,7 +52,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         if ( proposedValue == null )
             proposedValue = value;
         if (leader && active)
-            messenger.sendAccept(proposerHost, proposalID, proposedValue, locationInfo);
+            messenger.sendAccept(proposerHost, proposalID, proposedValue);
 
     }
 
@@ -65,15 +65,14 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         proposalID.incrementNumber();
 
         if(active) {
-            messenger.broadcastPrepare(proposalID, proposerHost, locationInfo);
+            messenger.broadcastPrepare(proposalID, proposerHost);
         }
     }
 
     public void resendAccept() {
         if(leader && active && proposedValue != null)
         {
-            messenger.sendAccept(proposerHost, proposalID, proposedValue, locationInfo);
-
+            messenger.sendAccept(proposerHost, proposalID, proposedValue);
         }
     }
 
@@ -97,9 +96,9 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         if (promisesReceived.size() > quorumSize/2) {
             leader = true;
             if (proposedValue != null)
-                messenger.sendAccept(this.proposerHost, proposalID, proposedValue, locationInfo);
+                messenger.sendAccept(this.proposerHost, proposalID, proposedValue);
             else
-                messenger.sendAccept(this.proposerHost, proposalID, getRandProposal(), locationInfo);
+                messenger.sendAccept(this.proposerHost, proposalID, getRandProposal());
         }
     }
     /*
@@ -156,8 +155,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     }
 
 
-    public Integer getRandProposal()
-    {
+    public Integer getRandProposal() {
         Integer newValue;
         newValue = new Integer(ThreadLocalRandom.current().nextInt(10, 10 + 10));
         System.out.println("Newly Proposed Value: " + newValue + "\n\n");

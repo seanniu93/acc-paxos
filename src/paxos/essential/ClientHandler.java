@@ -13,14 +13,13 @@ public class ClientHandler extends Thread{
     EssentialMessengerImpl essentialMessengerImpl;
     ObjectInputStream objectInputStream;
     String hostName;
-    public ClientHandler(Socket clientSocket, EssentialMessengerImpl essentialMessengerImpl, String hostName) throws IOException{
+    public ClientHandler(Socket clientSocket, EssentialMessengerImpl essentialMessengerImpl, String hostName) throws IOException {
         this.clientSocket = clientSocket;
         this.essentialMessengerImpl = essentialMessengerImpl;
         this.hostName = hostName;
         objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
     }
-    public void run ()
-    {
+    public void run () {
         Object o = null;
         try {
             o = objectInputStream.readObject();

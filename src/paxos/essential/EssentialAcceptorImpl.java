@@ -43,7 +43,7 @@ public class EssentialAcceptorImpl extends Thread implements EssentialAcceptor {
             acceptedID    = proposalID;
             acceptedValue = value;
 
-            messenger.sendAccepted(acceptorHost, acceptedID, acceptedValue, locationInfo);
+            messenger.sendAccepted(acceptorHost, acceptedID, acceptedValue);
         }
     }
 
@@ -88,7 +88,5 @@ public class EssentialAcceptorImpl extends Thread implements EssentialAcceptor {
                 return;
             }
         }
-
-
     }
 }
