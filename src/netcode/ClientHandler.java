@@ -1,11 +1,13 @@
-package paxos.essential;
+package netcode;
 
-import java.io.*;
-import java.net.ConnectException;
+import paxos.essential.*;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 
 /**
- * Created by yw486 on 12/20/15.
+ * Created by yw486 on 12/21/15.
  */
 public class ClientHandler extends Thread{
 
@@ -13,7 +15,7 @@ public class ClientHandler extends Thread{
     EssentialMessengerImpl essentialMessengerImpl;
     ObjectInputStream objectInputStream;
     String hostName;
-    public ClientHandler(Socket clientSocket, EssentialMessengerImpl essentialMessengerImpl, String hostName) throws IOException{
+    public ClientHandler(Socket clientSocket, EssentialMessengerImpl essentialMessengerImpl, String hostName) throws IOException {
         this.clientSocket = clientSocket;
         this.essentialMessengerImpl = essentialMessengerImpl;
         this.hostName = hostName;
@@ -44,15 +46,15 @@ public class ClientHandler extends Thread{
             }
             else if(o instanceof PromiseMessage)
             {
-                essentialMessengerImpl.addPromiseMessage((PromiseMessage)o, hostName);
+
             }
             else if(o instanceof AcceptMessage)
             {
-                essentialMessengerImpl.addAcceptMessage((AcceptMessage)o, hostName);
+
             }
             else if(o instanceof AcceptedMessage)
             {
-                essentialMessengerImpl.addAcceptedMessage((AcceptedMessage)o, hostName);
+
             }
             else if(o instanceof String)
             {

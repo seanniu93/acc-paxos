@@ -9,13 +9,13 @@ public interface EssentialMessenger {
 
 
 
-    public void broadcastPrepare(ProposalID proposalID, String fromUID);
+    public void broadcastPrepare(ProposalID proposalID, String proposerHost, LocationInfo locationInfo);
 
-    public void sendPromise(String proposerUID, String acceptorUID, ProposalID proposalID, ProposalID previousID, Object acceptedValue);
+    public void sendPromise(String acceptorHost, ProposalID proposalID, ProposalID previousID, Object acceptedValue, String proposerHost, int portNumber);
 
-    public void sendAccept(String fromUID, ProposalID proposalID, Object proposalValue);
+    public void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue, LocationInfo locationInfo);
 
-    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue);
+    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue, LocationInfo locationInfo);
 
     public void onResolution(String learnerUID, ProposalID proposalID, Object value);
 
@@ -26,4 +26,13 @@ public interface EssentialMessenger {
     public AcceptMessage getAcceptMessage(String acceptorUID);
 
     public AcceptedMessage getAcceptedMessage(String learnerUID);
+
+    public void addPrepareMessage(PrepareMessage prepareMessage, String acceptorHost);
+
+    public void addPromiseMessage(PromiseMessage promiseMessage, String proposerHost);
+
+    public void addAcceptMessage(AcceptMessage acceptMessage, String acceptorHost);
+
+    public void addAcceptedMessage(AcceptedMessage acceptedMessage, String learnerHost);
+
 }

@@ -1,5 +1,10 @@
 package paxos.essential;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
 /**
  * Created by Administrator on 12/18/2015.
  */
@@ -10,43 +15,80 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 
     MessagePool messagePool;
     int quorumSize;
+    LocationInfo locationInfo;
 
-    public EssentialMessengerImpl(MessagePool messagePool, int quorumSize)
+    public EssentialMessengerImpl(MessagePool messagePool, int quorumSize, LocationInfo locationInfo)
     {
         this.messagePool = messagePool;
         this.quorumSize = quorumSize;
+        this.locationInfo = locationInfo;
     }
 
-    public void broadcastPrepare(ProposalID proposalID, String fromUID) {
-        for(int acceptorNum=0; acceptorNum< quorumSize; acceptorNum++) {
-            PrepareMessage prepareMessage = new PrepareMessage(fromUID, proposalID);
-            messagePool.prepPool.get(acceptorNum).add(prepareMessage);
+    public void broadcastPrepare(ProposalID proposalID, String proposerHost, LocationInfo locationInfo) {
+        PrepareMessage prepareMessage = new PrepareMessage(proposerHost, proposalID);
+        for(int i = 0; i < locationInfo.portNumber.size(); i++)
+        {
+            BufferedReader in;
+            try {
+                Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
+                ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+                outputStream.writeObject(prepareMessage);
+            }
+            catch(IOException e) {
+                System.out.println("IO Exception while broadcasting prepare: " + e + "\n");
+            }
+            System.out.println("Broadcasting Prepare Message to host: " + locationInfo.hostName.get(i) + ", port:" + locationInfo.portNumber.get(i) + "\n");
         }
     }
 
-    public void sendPromise(String proposerUID, String acceptorUID, ProposalID proposalID, ProposalID previousID, Object acceptedValue) {
-        int proposerNum = Integer.valueOf(proposerUID);
-        PromiseMessage promiseMessage = new PromiseMessage(acceptorUID, proposalID, previousID, acceptedValue);
-        messagePool.promPool.get(proposerNum).add(promiseMessage);
+    public void sendPromise(String acceptorHost, ProposalID proposalID, ProposalID previousID, Object acceptedValue, String proposerHost, int portNumber) {
+        //int proposerNum = Integer.valueOf(proposerUID);
+        PromiseMessage promiseMessage = new PromiseMessage(acceptorHost, proposalID, previousID, acceptedValue);
+        try {
+            Socket socketToServer = new Socket(proposerHost, portNumber);
+            ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+            outputStream.writeObject(promiseMessage);
+        }
+        catch(IOException e) {
+            System.out.println("IO Exception while sending promise: " + e + "\n");
+        }
+        System.out.println("Sending Promise Message to host: " + proposerHost + ", port:" + portNumber + "\n");
     }
 
-    public void sendAccept(String fromUID, ProposalID proposalID, Object proposalValue) {
-        for(int acceptorNum=0; acceptorNum < quorumSize; acceptorNum++) {
+    public void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue, LocationInfo locationInfo) {
+        for(int i = 0; i < locationInfo.portNumber.size(); i++) {
             AcceptMessage acceptMessage = new AcceptMessage(proposalID, proposalValue);
-            messagePool.acceptPool.get(acceptorNum).add(acceptMessage);
+            try {
+                Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
+                ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+                outputStream.writeObject(acceptMessage);
+            }
+            catch(IOException e) {
+                System.out.println("IO Exception while sending accept: " + e + "\n");
+            }
+            System.out.println("Sending Promise Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
         }
     }
 
-    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue) {
-        for(int learnerNum=0; learnerNum < quorumSize; learnerNum++) {
+    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue, LocationInfo locationInfo) {
+        for(int i=0; i < quorumSize; i++) {
             AcceptedMessage acceptedMessage = new AcceptedMessage(fromUID, proposalID, acceptedValue);
-            messagePool.acceptedPool.get(learnerNum).add(acceptedMessage);
+            messagePool.acceptedPool.get(i).add(acceptedMessage);
+            try {
+                Socket socketToServer = new Socket(locationInfo.hostName.get(i), locationInfo.portNumber.get(i));
+                ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+                outputStream.writeObject(acceptedMessage);
+            }
+            catch(IOException e) {
+                System.out.println("IO Exception while sending accepted: " + e + "\n");
+            }
+            System.out.println("Sending Promise Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
         }
     }
 
-    public PrepareMessage getPrepareMessage(String acceptorUID)
+    public PrepareMessage getPrepareMessage(String acceptorHost)
     {
-        int uid = Integer.valueOf(acceptorUID);
+        int uid = locationInfo.hostName.indexOf(acceptorHost);
         if(messagePool.prepPool.get(uid).isEmpty())
         {
             return null;
@@ -57,9 +99,15 @@ public class EssentialMessengerImpl implements EssentialMessenger {
         }
     }
 
+    public void addPrepareMessage(PrepareMessage prepareMessage, String acceptorHost)
+    {
+        int uid = locationInfo.hostName.indexOf(acceptorHost);
+        messagePool.prepPool.get(uid).add(prepareMessage);
+    }
 
-    public PromiseMessage getPromiseMessage(String proposerUID) {
-        int uid = Integer.valueOf(proposerUID);
+
+    public PromiseMessage getPromiseMessage(String proposerHost) {
+        int uid = locationInfo.hostName.indexOf(proposerHost);
         if(messagePool.promPool.get(uid).isEmpty())
         {
             return null;
@@ -70,8 +118,14 @@ public class EssentialMessengerImpl implements EssentialMessenger {
         }
     }
 
-    public AcceptMessage getAcceptMessage(String acceptorUID) {
-        int uid = Integer.valueOf(acceptorUID);
+    public void addPromiseMessage(PromiseMessage promiseMessage, String proposerHost)
+    {
+        int uid = locationInfo.hostName.indexOf(proposerHost);
+        messagePool.promPool.get(uid).add(promiseMessage);
+    }
+
+    public AcceptMessage getAcceptMessage(String acceptorHost) {
+        int uid = locationInfo.hostName.indexOf(acceptorHost);
         if(messagePool.acceptPool.get(uid).isEmpty())
         {
             return null;
@@ -81,9 +135,14 @@ public class EssentialMessengerImpl implements EssentialMessenger {
             return messagePool.acceptPool.get(uid).remove(0);
         }
     }
+    public void addAcceptMessage(AcceptMessage acceptMessage, String acceptorHost)
+    {
+        int uid = locationInfo.hostName.indexOf(acceptorHost);
+        messagePool.acceptPool.get(uid).add(acceptMessage);
+    }
 
-    public AcceptedMessage getAcceptedMessage(String learnerUID) {
-        int uid = Integer.valueOf(learnerUID);
+    public AcceptedMessage getAcceptedMessage(String learnerHost) {
+        int uid = locationInfo.hostName.indexOf(learnerHost);
         if(messagePool.acceptedPool.get(uid).isEmpty())
         {
             return null;
@@ -92,6 +151,12 @@ public class EssentialMessengerImpl implements EssentialMessenger {
         {
             return messagePool.acceptedPool.get(uid).remove(0);
         }
+    }
+
+    public void addAcceptedMessage(AcceptedMessage acceptedMessage, String learnerHost)
+    {
+        int uid = locationInfo.hostName.indexOf(learnerHost);
+        messagePool.acceptedPool.get(uid).add(acceptedMessage);
     }
 
 

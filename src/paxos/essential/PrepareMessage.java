@@ -1,14 +1,16 @@
 package paxos.essential;
 
+import java.io.Serializable;
+
 /**
  * Created by Administrator on 12/18/2015.
  */
-public class PrepareMessage {
-    String proposerUID;
+public class PrepareMessage implements Serializable {
+    String proposerHost;
     ProposalID proposalID;
-    PrepareMessage(String proposerUID, ProposalID proposalID)
+    PrepareMessage(String proposerHost, ProposalID proposalID)
     {
-        this.proposerUID = proposerUID;
+        this.proposerHost = proposerHost;
         this.proposalID = proposalID;
     }
 }

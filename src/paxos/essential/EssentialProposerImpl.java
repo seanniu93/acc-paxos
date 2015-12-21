@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class EssentialProposerImpl extends Thread implements EssentialProposer {
     protected EssentialMessenger  messenger;
-    protected String              proposerUID;
+    protected String              proposerHost;
     protected final int           quorumSize;
 
     protected ProposalID          proposalID;
@@ -19,15 +19,26 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     protected ProposalID          lastAcceptedID     = null;
     protected HashSet<String>     promisesReceived   = new HashSet<String>();
 
+    protected LocationInfo        locationInfo;
+
     protected boolean leader = false;
     protected boolean active = true;
+
+    public EssentialProposerImpl(EssentialMessenger messenger, String proposerHost, int quorumSize, LocationInfo locationInfo) {
+        this.messenger   = messenger;
+        this.proposerHost = proposerHost;
+        this.quorumSize  = quorumSize;
+        this.proposalID  = new ProposalID(0, proposerHost);
+        this.leader = false;
+        this.locationInfo = locationInfo;
+    }
 
     public void receiveFromClients(ClientCommand command)
     {
         if(leader) //respond to the client request
         {
             proposalID.incrementNumber();
-            messenger.sendAccept(proposerUID, proposalID, proposedValue);
+            messenger.sendAccept(proposerHost, proposalID, proposedValue, locationInfo);
         }
         else    //forward the message to leader for processing
         {
@@ -35,20 +46,13 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         }
     }
 
-    public EssentialProposerImpl(EssentialMessenger messenger, String proposerUID, int quorumSize) {
-        this.messenger   = messenger;
-        this.proposerUID = proposerUID;
-        this.quorumSize  = quorumSize;
-        this.proposalID  = new ProposalID(0, proposerUID);
-        this.leader = false;
-    }
 
     @Override
     public void setProposal(Object value) {
         if ( proposedValue == null )
             proposedValue = value;
         if (leader && active)
-            messenger.sendAccept(proposerUID, proposalID, proposedValue);
+            messenger.sendAccept(proposerHost, proposalID, proposedValue, locationInfo);
 
     }
 
@@ -61,14 +65,14 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         proposalID.incrementNumber();
 
         if(active) {
-            messenger.broadcastPrepare(proposalID, proposerUID);
+            messenger.broadcastPrepare(proposalID, proposerHost, locationInfo);
         }
     }
 
     public void resendAccept() {
         if(leader && active && proposedValue != null)
         {
-            messenger.sendAccept(proposerUID, proposalID, proposedValue);
+            messenger.sendAccept(proposerHost, proposalID, proposedValue, locationInfo);
 
         }
     }
@@ -93,29 +97,29 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         if (promisesReceived.size() > quorumSize/2) {
             leader = true;
             if (proposedValue != null)
-                messenger.sendAccept(this.proposerUID, proposalID, proposedValue);
+                messenger.sendAccept(this.proposerHost, proposalID, proposedValue, locationInfo);
             else
-                messenger.sendAccept(this.proposerUID, proposalID, getRandProposal());
+                messenger.sendAccept(this.proposerHost, proposalID, getRandProposal(), locationInfo);
         }
     }
-/*
-    public int prepare_promise(ProposalID proposalID, ProposalID prevAcceptedID, Object prevAcceptedValue) {
-        int numPromise = 0;
-        String fromUID;
-        prepare();
-        while(true) {
-            for (int machineNum = 0; machineNum < quorumSize; machineNum++) {
-                receivePromise(Integer.toString(machineNum), proposalID, prevAcceptedID, prevAcceptedValue);
+    /*
+        public int prepare_promise(ProposalID proposalID, ProposalID prevAcceptedID, Object prevAcceptedValue) {
+            int numPromise = 0;
+            String fromUID;
+            prepare();
+            while(true) {
+                for (int machineNum = 0; machineNum < quorumSize; machineNum++) {
+                    receivePromise(Integer.toString(machineNum), proposalID, prevAcceptedID, prevAcceptedValue);
+                }
             }
         }
-    }
-*/
+    */
     public EssentialMessenger getMessenger() {
         return messenger;
     }
 
-    public String getProposerUID() {
-        return proposerUID;
+    public String getProposerHost() {
+        return proposerHost;
     }
 
     public int getQuorumSize() {
@@ -138,6 +142,20 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         return promisesReceived.size();
     }
 
+    public boolean isActive() { return active;}
+    public boolean isLeader() { return leader; }
+
+    public void setActive(boolean active)
+    {
+        this.active = active;
+    }
+
+    public void setLeader(boolean leader)
+    {
+        this.leader = leader;
+    }
+
+
     public Integer getRandProposal()
     {
         Integer newValue;
@@ -145,21 +163,21 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         System.out.println("Newly Proposed Value: " + newValue + "\n\n");
         return newValue;
     }
-/*
-    Object getBestVal(ArrayList<PromiseMessage> promises) {
-        ProposalID maxproposal = new ProposalID(0, new Integer(0).toString());
-        Object bestVal = null;
-        for(int i = 0; i < promises.size(); i++)
-        {
-            if(promises.get(i).proposalID.isGreaterThan(maxproposal))
+    /*
+        Object getBestVal(ArrayList<PromiseMessage> promises) {
+            ProposalID maxproposal = new ProposalID(0, new Integer(0).toString());
+            Object bestVal = null;
+            for(int i = 0; i < promises.size(); i++)
             {
-                maxproposal = promises.get(i).prevAcceptedID;
-                bestVal = promises.get(i).prevAcceptedValue;
+                if(promises.get(i).proposalID.isGreaterThan(maxproposal))
+                {
+                    maxproposal = promises.get(i).prevAcceptedID;
+                    bestVal = promises.get(i).prevAcceptedValue;
+                }
             }
+            return bestVal;
         }
-        return bestVal;
-    }
-*/
+    */
     public void run() {
         //ArrayList<PromiseMessage> promises = new ArrayList<PromiseMessage>();
         prepare();
@@ -167,9 +185,9 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         PromiseMessage promiseMessage;
         while(true)
         {
-            if((promiseMessage = messenger.getPromiseMessage(proposerUID))!=null)
+            if((promiseMessage = messenger.getPromiseMessage(proposerHost))!=null)
             {
-                receivePromise(promiseMessage.fromUID, promiseMessage.proposalID, promiseMessage.prevAcceptedID, promiseMessage.prevAcceptedValue);
+                receivePromise(promiseMessage.acceptorHost, promiseMessage.proposalID, promiseMessage.prevAcceptedID, promiseMessage.prevAcceptedValue);
                 //System.out.println("Received Promise "+promiseMessage.fromUID+" "+promiseMessage.prevAcceptedValue+" "+ promiseMessage.prevAcceptedID + " "+promiseMessage.proposalID);
             }
             if (System.currentTimeMillis() > endTimeMillis) {
@@ -181,3 +199,4 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 
 
 }
+

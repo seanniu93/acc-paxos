@@ -1,5 +1,6 @@
 package paxos.essential;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by Administrator on 12/18/2015.
@@ -7,33 +8,33 @@ import java.util.*;
 public class MessagePool {
     protected final int quorumSize;
 
-    ArrayList<ArrayList<PrepareMessage>> prepPool;
-    ArrayList<ArrayList<PromiseMessage>> promPool;
-    ArrayList<ArrayList<AcceptMessage>> acceptPool;
-    ArrayList<ArrayList<AcceptedMessage>> acceptedPool;
+    ArrayList<CopyOnWriteArrayList<PrepareMessage>> prepPool;
+    ArrayList<CopyOnWriteArrayList<PromiseMessage>> promPool;
+    ArrayList<CopyOnWriteArrayList<AcceptMessage>> acceptPool;
+    ArrayList<CopyOnWriteArrayList<AcceptedMessage>> acceptedPool;
 
 
     MessagePool(int quorumSize) {
         this.quorumSize = quorumSize;
-        this.prepPool= new ArrayList<ArrayList<PrepareMessage>>(quorumSize);
+        this.prepPool= new ArrayList<CopyOnWriteArrayList<PrepareMessage>>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
-            prepPool.add(new ArrayList<>());
+            prepPool.add(new CopyOnWriteArrayList<>());
         }
-        this.promPool = new ArrayList<ArrayList<PromiseMessage>>(quorumSize);
+        this.promPool = new ArrayList<CopyOnWriteArrayList<PromiseMessage>>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
-            promPool.add(new ArrayList<>());
+            promPool.add(new CopyOnWriteArrayList<>());
         }
-        this.acceptPool = new ArrayList<ArrayList<AcceptMessage>>(quorumSize);
+        this.acceptPool = new ArrayList<CopyOnWriteArrayList<AcceptMessage>>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
-            acceptPool.add(new ArrayList<>());
+            acceptPool.add(new CopyOnWriteArrayList<>());
         }
-        this.acceptedPool = new ArrayList<ArrayList<AcceptedMessage>>(quorumSize);
+        this.acceptedPool = new ArrayList<CopyOnWriteArrayList<AcceptedMessage>>(quorumSize);
         for(int i=0; i< quorumSize; i++)
         {
-            acceptedPool.add(new ArrayList<>());
+            acceptedPool.add(new CopyOnWriteArrayList<>());
         }
     }
 }

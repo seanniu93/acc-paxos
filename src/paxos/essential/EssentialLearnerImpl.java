@@ -26,13 +26,13 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
     private HashMap<String,  ProposalID>  acceptors       = new HashMap<String, ProposalID>();
     private Object                        finalValue      = null;
     private ProposalID                    finalProposalID = null;
-    private String                        learnerUID;
+    private String                        learnerHost;
     private Hashtable                     disk;
 
-    public EssentialLearnerImpl( EssentialMessenger messenger, String learnerUID , int quorumSize) {
+    public EssentialLearnerImpl( EssentialMessenger messenger, String learnerHost, int quorumSize) {
         this.messenger  = messenger;
         this.quorumSize = quorumSize;
-        this.learnerUID = learnerUID;
+        this.learnerHost = learnerHost;
         this.disk = new Hashtable();
     }
 
@@ -42,18 +42,18 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
     }
 
     @Override
-    public void receiveAccepted(String fromUID, ProposalID proposalID,
+    public void receiveAccepted(String acceptorHost, ProposalID proposalID,
                                 Object acceptedValue) {
 
         if (isComplete())
             return;
 
-        ProposalID oldPID = acceptors.get(fromUID);
+        ProposalID oldPID = acceptors.get(acceptorHost);
 
         if (oldPID != null && !proposalID.isGreaterThan(oldPID))
             return;
 
-        acceptors.put(fromUID, proposalID);
+        acceptors.put(acceptorHost, proposalID);
 
         if (oldPID != null) {
             Proposal oldProposal = proposals.get(oldPID);
@@ -77,7 +77,7 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
             acceptors.clear();
             //ClientCommand command = ClientCommand.class.cast(acceptedValue);
             //disk.put(command.key, command.value);
-            messenger.onResolution(learnerUID, proposalID, acceptedValue);
+            messenger.onResolution(learnerHost, proposalID, acceptedValue);
         }
     }
 
@@ -100,7 +100,7 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
         AcceptedMessage acceptedMessage;
         while(true)
         {
-            acceptedMessage = messenger.getAcceptedMessage(learnerUID);
+            acceptedMessage = messenger.getAcceptedMessage(learnerHost);
             if(acceptedMessage!=null)
             {
                 receiveAccepted(acceptedMessage.fromUID, acceptedMessage.proposalID, acceptedMessage.acceptedValue);
