@@ -66,7 +66,7 @@ public class EssentialMessengerImpl implements EssentialMessenger {
                     System.out.println("IO Exception while sending accept: " + e + "\n");
                 }
             }
-            System.out.println("Sending Promise Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
+            System.out.println("Sending Accept Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
         }
     }
 
@@ -81,7 +81,7 @@ public class EssentialMessengerImpl implements EssentialMessenger {
                     System.out.println("IO Exception while sending accepted: " + e + "\n");
                 }
             }
-            System.out.println("Sending Promise Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
+            System.out.println("Sending Accepted Message to host: " + locationInfo.hostName.get(i) + ", port: " +locationInfo.portNumber.get(i) + "\n");
         }
     }
 

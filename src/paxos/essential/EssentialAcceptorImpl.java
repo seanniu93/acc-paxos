@@ -69,7 +69,7 @@ public class EssentialAcceptorImpl extends Thread implements EssentialAcceptor {
     }
 
     public void run() {
-        long endTimeMillis = System.currentTimeMillis() + 10000;
+        //long endTimeMillis = System.currentTimeMillis() + 10000;
         PrepareMessage prepareMessage;
         AcceptMessage acceptMessage;
         while(true)
@@ -83,10 +83,12 @@ public class EssentialAcceptorImpl extends Thread implements EssentialAcceptor {
             if((acceptMessage = messenger.getAcceptMessage(acceptorHost))!=null) {
                 receiveAcceptRequest(acceptMessage.proposalID, acceptMessage.value);
             }
+            /*
             if (System.currentTimeMillis() > endTimeMillis) {
                 // do some clean-up
                 return;
             }
+            */
         }
     }
 }

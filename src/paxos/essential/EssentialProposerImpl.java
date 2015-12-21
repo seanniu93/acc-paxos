@@ -179,7 +179,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     public void run() {
         //ArrayList<PromiseMessage> promises = new ArrayList<PromiseMessage>();
         prepare();
-        long endTimeMillis = System.currentTimeMillis() + 10000;
+        //long endTimeMillis = System.currentTimeMillis() + 10000;
         PromiseMessage promiseMessage;
         while(true)
         {
@@ -188,10 +188,12 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
                 receivePromise(promiseMessage.acceptorHost, promiseMessage.proposalID, promiseMessage.prevAcceptedID, promiseMessage.prevAcceptedValue);
                 //System.out.println("Received Promise "+promiseMessage.fromUID+" "+promiseMessage.prevAcceptedValue+" "+ promiseMessage.prevAcceptedID + " "+promiseMessage.proposalID);
             }
+            /*
             if (System.currentTimeMillis() > endTimeMillis) {
                 // do some clean-up
                 return;
             }
+            */
         }
     }
 

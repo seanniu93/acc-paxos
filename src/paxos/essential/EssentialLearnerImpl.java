@@ -96,7 +96,7 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
     }
 
     public void run() {
-        long endTimeMillis = System.currentTimeMillis() + 10000;
+        //long endTimeMillis = System.currentTimeMillis() + 10000;
         AcceptedMessage acceptedMessage;
         while(true)
         {
@@ -105,10 +105,12 @@ public class EssentialLearnerImpl extends Thread implements EssentialLearner {
             {
                 receiveAccepted(acceptedMessage.fromUID, acceptedMessage.proposalID, acceptedMessage.acceptedValue);
             }
+            /*
             if (System.currentTimeMillis() > endTimeMillis) {
                 // do some clean-up
                 return;
             }
+            */
         }
     }
 }
