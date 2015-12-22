@@ -1,38 +1,32 @@
 package paxos.essential;
 
-import com.sun.deploy.util.SessionState;
-
-/**
- * Created by Administrator on 12/18/2015.
- */
 public interface EssentialMessenger {
 
+	void broadcastPrepare(ProposalID proposalID, String proposerHost);
 
+	void sendPromise(String acceptorHost, ProposalID proposalID, ProposalID previousID, Object acceptedValue,
+	                 String proposerHost, int portNumber);
 
-    public void broadcastPrepare(ProposalID proposalID, String proposerHost);
+	void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue);
 
-    public void sendPromise(String acceptorHost, ProposalID proposalID, ProposalID previousID, Object acceptedValue, String proposerHost, int portNumber);
+	void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue);
 
-    public void sendAccept(String proposerHost, ProposalID proposalID, Object proposalValue);
+	void onResolution(String learnerUID, ProposalID proposalID, Object value);
 
-    public void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue);
+	PrepareMessage getPrepareMessage(String acceptorUID);
 
-    public void onResolution(String learnerUID, ProposalID proposalID, Object value);
+	PromiseMessage getPromiseMessage(String proposerUID);
 
-    public PrepareMessage getPrepareMessage(String acceptorUID);
+	AcceptMessage getAcceptMessage(String acceptorUID);
 
-    public PromiseMessage getPromiseMessage(String proposerUID);
+	AcceptedMessage getAcceptedMessage(String learnerUID);
 
-    public AcceptMessage getAcceptMessage(String acceptorUID);
+	void addPrepareMessage(PrepareMessage prepareMessage, String acceptorHost);
 
-    public AcceptedMessage getAcceptedMessage(String learnerUID);
+	void addPromiseMessage(PromiseMessage promiseMessage, String proposerHost);
 
-    public void addPrepareMessage(PrepareMessage prepareMessage, String acceptorHost);
+	void addAcceptMessage(AcceptMessage acceptMessage, String acceptorHost);
 
-    public void addPromiseMessage(PromiseMessage promiseMessage, String proposerHost);
-
-    public void addAcceptMessage(AcceptMessage acceptMessage, String acceptorHost);
-
-    public void addAcceptedMessage(AcceptedMessage acceptedMessage, String learnerHost);
+	void addAcceptedMessage(AcceptedMessage acceptedMessage, String learnerHost);
 
 }

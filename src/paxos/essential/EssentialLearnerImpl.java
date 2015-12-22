@@ -1,116 +1,111 @@
 package paxos.essential;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 
-/**
- * Created by Administrator on 12/18/2015.
- */
 public class EssentialLearnerImpl extends Thread implements EssentialLearner {
-    class Proposal {
-        int    acceptCount;
-        int    retentionCount;
-        Object value;
 
-        Proposal(int acceptCount, int retentionCount, Object value) {
-            this.acceptCount    = acceptCount;
-            this.retentionCount = retentionCount;
-            this.value          = value;
-        }
-    }
+	class Proposal {
+		int acceptCount;
+		int retentionCount;
+		Object value;
 
-    private final EssentialMessenger      messenger;
-    private final int                     quorumSize;
-    private HashMap<ProposalID, Proposal> proposals       = new HashMap<ProposalID, Proposal>();
-    private HashMap<String,  ProposalID>  acceptors       = new HashMap<String, ProposalID>();
-    private Object                        finalValue      = null;
-    private ProposalID                    finalProposalID = null;
-    private String                        learnerHost;
-    private Hashtable                     disk;
+		Proposal(int acceptCount, int retentionCount, Object value) {
+			this.acceptCount = acceptCount;
+			this.retentionCount = retentionCount;
+			this.value = value;
+		}
+	}
 
-    public EssentialLearnerImpl( EssentialMessenger messenger, String learnerHost, int quorumSize) {
-        this.messenger  = messenger;
-        this.quorumSize = quorumSize;
-        this.learnerHost = learnerHost;
-        this.disk = new Hashtable();
-    }
+	private final EssentialMessenger      messenger;
+	private final int                     quorumSize;
+	private HashMap<ProposalID, Proposal> proposals       = new HashMap<>();
+	private HashMap<String, ProposalID>   acceptors       = new HashMap<>();
+	private Object                        finalValue      = null;
+	private ProposalID                    finalProposalID = null;
+	private String                        learnerHost;
+	private Hashtable                     disk;
 
-    @Override
-    public boolean isComplete() {
-        return finalValue != null;
-    }
+	public EssentialLearnerImpl(EssentialMessenger messenger, String learnerHost, int quorumSize) {
+		this.messenger = messenger;
+		this.quorumSize = quorumSize;
+		this.learnerHost = learnerHost;
+		this.disk = new Hashtable();
+	}
 
-    @Override
-    public void receiveAccepted(String acceptorHost, ProposalID proposalID,
-                                Object acceptedValue) {
+	@Override
+	public boolean isComplete() {
+		return finalValue != null;
+	}
 
-        if (isComplete())
-            return;
+	@Override
+	public void receiveAccepted(String acceptorHost, ProposalID proposalID,
+	                            Object acceptedValue) {
 
-        ProposalID oldPID = acceptors.get(acceptorHost);
+		if (isComplete())
+			return;
 
-        if (oldPID != null && !proposalID.isGreaterThan(oldPID))
-            return;
+		ProposalID oldPID = acceptors.get(acceptorHost);
 
-        acceptors.put(acceptorHost, proposalID);
+		if (oldPID != null && !proposalID.isGreaterThan(oldPID))
+			return;
 
-        if (oldPID != null) {
-            Proposal oldProposal = proposals.get(oldPID);
-            oldProposal.retentionCount -= 1;
-            if (oldProposal.retentionCount == 0)
-                proposals.remove(oldPID);
-        }
+		acceptors.put(acceptorHost, proposalID);
 
-        if (!proposals.containsKey(proposalID))
-            proposals.put(proposalID, new Proposal(0, 0, acceptedValue));
+		if (oldPID != null) {
+			Proposal oldProposal = proposals.get(oldPID);
+			oldProposal.retentionCount -= 1;
+			if (oldProposal.retentionCount == 0)
+				proposals.remove(oldPID);
+		}
 
-        Proposal thisProposal = proposals.get(proposalID);
+		if (!proposals.containsKey(proposalID))
+			proposals.put(proposalID, new Proposal(0, 0, acceptedValue));
 
-        thisProposal.acceptCount    += 1;
-        thisProposal.retentionCount += 1;
+		Proposal thisProposal = proposals.get(proposalID);
 
-        if (thisProposal.acceptCount > quorumSize/2) {
-            finalProposalID = proposalID;
-            finalValue      = acceptedValue;
-            proposals.clear();
-            acceptors.clear();
-            //ClientCommand command = ClientCommand.class.cast(acceptedValue);
-            //disk.put(command.key, command.value);
-            messenger.onResolution(learnerHost, proposalID, acceptedValue);
-        }
-    }
+		thisProposal.acceptCount += 1;
+		thisProposal.retentionCount += 1;
 
-    public int getQuorumSize() {
-        return quorumSize;
-    }
+		if (thisProposal.acceptCount > quorumSize / 2) {
+			finalProposalID = proposalID;
+			finalValue = acceptedValue;
+			proposals.clear();
+			acceptors.clear();
+			//ClientCommand command = ClientCommand.class.cast(acceptedValue);
+			//disk.put(command.key, command.value);
+			messenger.onResolution(learnerHost, proposalID, acceptedValue);
+		}
+	}
 
-    @Override
-    public Object getFinalValue() {
-        return finalValue;
-    }
+	public int getQuorumSize() {
+		return quorumSize;
+	}
 
-    @Override
-    public ProposalID getFinalProposalID() {
-        return finalProposalID;
-    }
+	@Override
+	public Object getFinalValue() {
+		return finalValue;
+	}
 
-    public void run() {
-        //long endTimeMillis = System.currentTimeMillis() + 10000;
-        AcceptedMessage acceptedMessage;
-        while(true)
-        {
-            acceptedMessage = messenger.getAcceptedMessage(learnerHost);
-            if(acceptedMessage!=null)
-            {
-                receiveAccepted(acceptedMessage.fromUID, acceptedMessage.proposalID, acceptedMessage.acceptedValue);
-            }
-            /*
-            if (System.currentTimeMillis() > endTimeMillis) {
-                // do some clean-up
-                return;
-            }
-            */
-        }
-    }
+	@Override
+	public ProposalID getFinalProposalID() {
+		return finalProposalID;
+	}
+
+	public void run() {
+		//long endTimeMillis = System.currentTimeMillis() + 10000;
+		AcceptedMessage acceptedMessage;
+		while (true) {
+			acceptedMessage = messenger.getAcceptedMessage(learnerHost);
+			if (acceptedMessage != null) {
+				receiveAccepted(acceptedMessage.fromUID, acceptedMessage.proposalID, acceptedMessage.acceptedValue);
+			}
+
+//			if (System.currentTimeMillis() > endTimeMillis) {
+//				// do some clean-up
+//				return;
+//			}
+		}
+	}
+
 }

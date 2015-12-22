@@ -1,14 +1,13 @@
 package paxos.essential;
 
-/**
- * Created by Administrator on 12/18/2015.
- */
 public interface EssentialLearner {
-    public boolean isComplete();
 
-    public void receiveAccepted(String fromUID, ProposalID proposalID, Object acceptedValue);
+	boolean isComplete();
 
-    public Object getFinalValue();
+	void receiveAccepted(String fromUID, ProposalID proposalID, Object acceptedValue);
 
-    ProposalID getFinalProposalID();
+	Object getFinalValue();
+
+	ProposalID getFinalProposalID();
+
 }

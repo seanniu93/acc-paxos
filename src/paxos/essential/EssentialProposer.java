@@ -1,12 +1,11 @@
 package paxos.essential;
 
-/**
- * Created by Administrator on 12/18/2015.
- */
 public interface EssentialProposer {
-    public void setProposal(Object value);
 
-    public void prepare();
+	void setProposal(Object value);
 
-    public void receivePromise(String fromUID, ProposalID proposalID, ProposalID prevAcceptedID, Object prevAcceptedValue);
+	void prepare();
+
+	void receivePromise(String fromUID, ProposalID proposalID, ProposalID prevAcceptedID, Object prevAcceptedValue);
+
 }
