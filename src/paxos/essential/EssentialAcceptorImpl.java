@@ -1,5 +1,7 @@
 package paxos.essential;
 
+import java.util.ArrayList;
+
 public class EssentialAcceptorImpl extends Thread implements EssentialAcceptor {
 
     protected EssentialMessenger messenger;
@@ -9,16 +11,16 @@ public class EssentialAcceptorImpl extends Thread implements EssentialAcceptor {
     protected String             acceptorHost;
     protected int                portNumber;
     protected int                quorumSize;
-    protected LocationInfo       locationInfo;
+    protected ArrayList<LocationInfo> locationInfoList;
     boolean                      active;
 
 	public EssentialAcceptorImpl(EssentialMessenger messenger, String acceptorHost, int quorumSize, int portNumber,
-	                             LocationInfo locationInfo) {
+	                             ArrayList<LocationInfo> locationInfoList) {
 		this.messenger = messenger;
 		this.acceptorHost = acceptorHost;
 		this.quorumSize = quorumSize;
 		this.portNumber = portNumber;
-		this.locationInfo = locationInfo;
+		this.locationInfoList = locationInfoList;
 	}
 
 	@Override

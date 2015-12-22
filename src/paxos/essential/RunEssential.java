@@ -21,19 +21,14 @@ public class RunEssential {
 		}
 		Integer myport = 3333;
 
-		ArrayList<String> hostName = new ArrayList<String>();
-		ArrayList<Integer> portNumber = new ArrayList<Integer>();
-		hostName.add("frog.zoo.cs.yale.edu");
-		hostName.add("bumblebee.zoo.cs.yale.edu");
-		portNumber.add(3333);
-		portNumber.add(3333);
-		LocationInfo locationInfo = new LocationInfo(hostName, portNumber);
-
+		ArrayList<LocationInfo> locationInfoList = new ArrayList<>();
+		locationInfoList.add(new LocationInfo("frog.zoo.cs.yale.edu", 3333));
+		locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
 		MessagePool messagePool = new MessagePool(quorumSize);
 		EssentialMessengerImpl essentialMessengerImpl = new EssentialMessengerImpl(messagePool, quorumSize,
-				locationInfo);
+				locationInfoList);
 
-		Node node = new Node(essentialMessengerImpl, myHostName, quorumSize, myport, locationInfo);
+		Node node = new Node(essentialMessengerImpl, myHostName, quorumSize, myport, locationInfoList);
 		node.start();
 	}
 }

@@ -1,15 +1,22 @@
 package paxos.essential;
 
-import java.util.ArrayList;
-
 public class LocationInfo {
 
-	ArrayList<String> hostName;
-	ArrayList<Integer> portNumber;
+	private String hostName;
 
-	public LocationInfo(ArrayList<String> hostName, ArrayList<Integer> portNUmber) {
+	private int portNumber;
+
+	public LocationInfo(String hostName, int portNUmber) {
 		this.hostName = hostName;
 		this.portNumber = portNUmber;
+	}
+
+	public int getPortNumber() {
+		return portNumber;
+	}
+
+	public String getHostName() {
+		return hostName;
 	}
 
 }

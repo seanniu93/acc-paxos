@@ -1,5 +1,7 @@
 package paxos.essential;
 
+import java.util.ArrayList;
+
 public class Node extends Thread implements EssentialProposer, EssentialAcceptor, EssentialLearner, EssentialListener {
 
 	EssentialProposerImpl essentialProposerImpl;
@@ -11,17 +13,17 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 	EssentialMessengerImpl essentialMessengerImpl;
 	int quorumSize;
 	int portNumber;
-	LocationInfo locationInfo;
+	ArrayList<LocationInfo> locationInfoList;
 
 	public Node(EssentialMessengerImpl essentialMessengerImpl, String hostName, int quorumSize, int portNumber,
-	            LocationInfo locationInfo) {
+	            ArrayList<LocationInfo> locationInfoList) {
 		this.essentialMessengerImpl = essentialMessengerImpl;
 		this.hostName = hostName;
 		this.quorumSize = quorumSize;
 		this.portNumber = portNumber;
-		this.locationInfo = locationInfo;
-		this.essentialProposerImpl = new EssentialProposerImpl(essentialMessengerImpl, hostName, quorumSize, locationInfo);
-		this.essentialAcceptorImpl = new EssentialAcceptorImpl(essentialMessengerImpl, hostName, quorumSize, portNumber, locationInfo);
+		this.locationInfoList = locationInfoList;
+		this.essentialProposerImpl = new EssentialProposerImpl(essentialMessengerImpl, hostName, quorumSize, locationInfoList);
+		this.essentialAcceptorImpl = new EssentialAcceptorImpl(essentialMessengerImpl, hostName, quorumSize, portNumber, locationInfoList);
 		this.essentialLearnerImpl = new EssentialLearnerImpl(essentialMessengerImpl, hostName, quorumSize);
 		this.essentialListenerImpl = new EssentialListenerImpl(portNumber, hostName, essentialMessengerImpl);
 	}

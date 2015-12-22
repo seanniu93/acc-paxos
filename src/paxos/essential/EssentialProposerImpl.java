@@ -1,5 +1,6 @@
 package paxos.essential;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -16,18 +17,18 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     protected ProposalID          lastAcceptedID     = null;
     protected HashSet<String>     promisesReceived   = new HashSet<String>();
 
-    protected LocationInfo        locationInfo;
+    protected ArrayList<LocationInfo> locationInfoList;
 
     protected boolean leader = false;
     protected boolean active = true;
 
-    public EssentialProposerImpl(EssentialMessenger messenger, String proposerHost, int quorumSize, LocationInfo locationInfo) {
+    public EssentialProposerImpl(EssentialMessenger messenger, String proposerHost, int quorumSize, ArrayList<LocationInfo> locationInfoList) {
         this.messenger   = messenger;
         this.proposerHost = proposerHost;
         this.quorumSize  = quorumSize;
         this.proposalID  = new ProposalID(0, proposerHost);
         this.leader = false;
-        this.locationInfo = locationInfo;
+        this.locationInfoList = locationInfoList;
     }
 
     public void receiveFromClients(ClientCommand command) {
