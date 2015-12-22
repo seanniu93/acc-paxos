@@ -1,81 +1,90 @@
 package netcode;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import com.sun.xml.internal.bind.v2.runtime.output.SAXOutput;
+import paxos.essential.*;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class RunNetwork {
 
+
 	public static void main(String[] args) throws IOException {
 		//Server
-		Thread threadServer = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				int portnumber = 4446;
+		ArrayList<LocationInfo> locationInfoList = new ArrayList<>();
+		locationInfoList.add(new LocationInfo("frog.zoo.cs.yale.edu", 3333));
+		locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
 
-				ServerSocket serverSocket = null;
-				try {
-					serverSocket = new ServerSocket(portnumber);
-				} catch (IOException e) {
-					e.printStackTrace();
+		int targetServerIndex = ThreadLocalRandom.current().nextInt(0, locationInfoList.size());
+		String hostName = locationInfoList.get(targetServerIndex).getHostName();
+		int portNumber = locationInfoList.get(targetServerIndex).getPortNumber();
+
+		//Client
+		BufferedReader cin = new BufferedReader(new InputStreamReader(System.in));
+
+		while(true) {
+			try {
+				//Read command from client
+				System.out.println("Read or Write: ");
+				String rorw = cin.readLine();
+				if(!rorw.equals("read") && !rorw.equals("write")) {
+					System.out.println("Illigal command\n");
+					continue;
 				}
+				System.out.println("Enter Key: ");
+				String key = cin.readLine();
+				System.out.println("Enter Value: ");
+				String value = cin.readLine();
+				ClientCommand cmd = new ClientCommand(rorw, key, value);
 
+
+
+				//Sending request to server
+				Socket socketToServer = new Socket(hostName, portNumber);
+				ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+				ObjectInputStream objectInputStream = new ObjectInputStream(socketToServer.getInputStream());
+
+				outputStream.writeObject((cmd));
+
+
+
+				Object fromServer = null;
+				long startTime = System.currentTimeMillis();
 				while (true) {
-					Socket clientSocket = null;
-					try {
-						clientSocket = serverSocket.accept();
-					} catch (IOException e) {
+					try{
+						fromServer = objectInputStream.readObject();
+					}
+					catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}
-					ClientHandler clientHandler = null;
-					try {
-						clientHandler = new ClientHandler(clientSocket);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					clientHandler.start();
-					break;
-				}
-			}
-		});
-		Thread threadClient = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				int portnumber = 4446;
-				//Client
-				String hostName = new String("frog.zoo.cs.yale.edu");
-				PrintWriter out;
-				BufferedReader in;
-				try {
-					Socket kkSocket = new Socket(hostName, portnumber);
-					out = new PrintWriter(kkSocket.getOutputStream(), true);
-					in = new BufferedReader(
-							new InputStreamReader(kkSocket.getInputStream()));
 
-					String fromServer;
-					while ((fromServer = in.readLine()) != null) {
-						System.out.println("Server: " + fromServer);
-						if (fromServer.equals("Bye")) {
-							break;
-						}
-						//BufferedReader stdin;
-						//stdin = new BufferedReader(new InputStreamReader(System.in));
-						String fromUser = "Ahahahahahaha\n";
-						if (fromServer != null) {
-							//System.out.println("Client: " + fromUser);
-							out.println(fromUser);
-						}
+					if(fromServer instanceof CommandReceived) {
+						System.out.println("command received by server");
 					}
-				} catch (IOException e) {
-					System.out.println("IO Exception while creating client socket\n");
+					else if(fromServer instanceof RedirLeader) {
+						hostName = ((RedirLeader) fromServer).getHostName();
+						portNumber = ((RedirLeader) fromServer).getPortNumber();
+						break;
+					}
+					else if(fromServer instanceof CommandAccepted) {
+						System.out.println("command accepted by server");
+						break;
+					}
+					else {
+						System.out.println("Unknown message from server");
+					}
+
+					if((System.currentTimeMillis()-startTime)>10000) {
+						System.out.println("Connecting to server TLE");
+					}
 				}
+			} catch (IOException e) {
+				System.out.println("IO Exception while creating client socket\n");
 			}
-		});
-		threadServer.start();
-		threadClient.start();
+		}
 	}
 
 }
