@@ -16,7 +16,7 @@ public class RunNetwork {
 		//Server
 		ArrayList<LocationInfo> locationInfoList = new ArrayList<>();
 		locationInfoList.add(new LocationInfo("frog.zoo.cs.yale.edu", 3333));
-		locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
+		//locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
 
 		int targetServerIndex = ThreadLocalRandom.current().nextInt(0, locationInfoList.size());
 		String hostName = locationInfoList.get(targetServerIndex).getHostName();

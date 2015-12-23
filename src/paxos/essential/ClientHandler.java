@@ -57,9 +57,11 @@ public class ClientHandler extends Thread {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+					System.out.println("I am the leader but I have not implemented multipaxos yet!\n");
 					handleCommand((ClientCommand) o);
 				}
 				else {
+					System.out.println("I am not the leade, find someone else!\n");
 					RedirLeader redirMsg = new RedirLeader(leaderHost);
 					try {
 						objectOutputStream.writeObject(redirMsg);
