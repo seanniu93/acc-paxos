@@ -86,7 +86,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
             if (prevAcceptedValue != null)
                 proposedValue = prevAcceptedValue;
         }
-	    System.out.printf("@@@@@@@@@@@@@@@@@@@@@");
+
         if (promisesReceived.size() > quorumSize / 2) {
 	        leaderHost = proposerHost;
             if (proposedValue != null)

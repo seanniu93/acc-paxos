@@ -46,31 +46,26 @@ public class ClientHandler extends Thread {
 	}
 
 	private void handleClientCommand(ClientCommand cmd) {
-		ObjectOutputStream output = null;
-		try {
-			output = new ObjectOutputStream(new Socket(cmd.getHostname(), cmd.getPort()).getOutputStream());
+		try (ObjectOutputStream output = new ObjectOutputStream(new Socket(cmd.getHostname(), cmd.getPort()).getOutputStream())) {
+			if (isLeader()) {
+				try {
+					output.writeObject(new CommandReceived(hostName, 3333));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				System.out.println("I am the leader but I have not implemented multipaxos yet!\n");
+				// TODO do stuff with command
+			} else {
+				System.out.println("I am not the leader, find someone else!\n");
+				RedirLeader redirMsg = new RedirLeader(leaderHost, 3333);
+				try {
+					output.writeObject(redirMsg);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		if (output == null)
-			return;
-
-		if (isLeader()) {
-			try {
-				output.writeObject(new CommandReceived(hostName, 3333));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			System.out.println("I am the leader but I have not implemented multipaxos yet!\n");
-			// TODO do stuff with command
-		} else {
-			System.out.println("I am not the leader, find someone else!\n");
-			RedirLeader redirMsg = new RedirLeader(leaderHost, 3333);
-			try {
-				output.writeObject(redirMsg);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
