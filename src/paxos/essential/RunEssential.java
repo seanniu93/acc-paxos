@@ -6,10 +6,6 @@ import java.util.ArrayList;
 
 public class RunEssential {
 
-	static int quorumSize = 1;
-	static MessagePool messagePool = new MessagePool(quorumSize);
-
-	//add hostname and port number here;
 
 	public static void main(String[] args) {
 		System.out.println("Hello, World!");
@@ -24,6 +20,10 @@ public class RunEssential {
 		ArrayList<LocationInfo> locationInfoList = new ArrayList<>();
 		locationInfoList.add(new LocationInfo("frog.zoo.cs.yale.edu", 3333));
 		locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
+		locationInfoList.add(new LocationInfo("lion.zoo.cs.yale.edu", 3333));
+
+		int quorumSize = locationInfoList.size();
+
 		MessagePool messagePool = new MessagePool(quorumSize);
 		EssentialMessengerImpl essentialMessengerImpl = new EssentialMessengerImpl(messagePool, quorumSize,
 				locationInfoList);
