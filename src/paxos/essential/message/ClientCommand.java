@@ -1,15 +1,14 @@
-package paxos.essential;
+package paxos.essential.message;
 
-import java.io.Serializable;
+public class ClientCommand extends Message {
 
-public class ClientCommand implements Serializable {
-
-	private Integer cid;
+	private int cid;
 	private String rorw;
 	private String key;
 	private String value;
 
-	public ClientCommand(String rorw, String key, String value) {
+	public ClientCommand(String hostname, int port, String rorw, String key, String value) {
+		super(hostname, port);
 		this.rorw = rorw;
 		this.key = key;
 		this.value = value;
