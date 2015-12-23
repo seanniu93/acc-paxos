@@ -1,8 +1,10 @@
 package paxos.essential;
 
-/**
- * Created by Administrator on 12/22/2015.
- */
-public class CommandReceived {
-    CommandReceived() {}
+import java.io.Serializable;
+
+public class CommandReceived implements Serializable {
+
+	CommandReceived() {
+	}
+
 }

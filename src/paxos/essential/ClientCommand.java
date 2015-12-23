@@ -1,6 +1,9 @@
 package paxos.essential;
 
-public class ClientCommand {
+import java.io.Serializable;
+
+public class ClientCommand implements Serializable {
+
 	private Integer cid;
 	private String rorw;
 	private String key;
@@ -25,4 +28,5 @@ public class ClientCommand {
 	public  String getRorw() { return rorw; }
 
 	public Integer getCid() { return cid; }
+
 }

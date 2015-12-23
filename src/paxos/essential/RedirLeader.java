@@ -1,9 +1,8 @@
 package paxos.essential;
 
-/**
- * Created by Administrator on 12/22/2015.
- */
-public class RedirLeader {
+import java.io.Serializable;
+
+public class RedirLeader implements Serializable{
     private String hostName;
 
     RedirLeader (String hostName) {
