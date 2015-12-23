@@ -14,6 +14,7 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 	int quorumSize;
 	int portNumber;
 	ArrayList<LocationInfo> locationInfoList;
+	String leaderHost;
 
 	public Node(EssentialMessengerImpl essentialMessengerImpl, String hostName, int quorumSize, int portNumber,
 	            ArrayList<LocationInfo> locationInfoList) {
@@ -22,10 +23,12 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 		this.quorumSize = quorumSize;
 		this.portNumber = portNumber;
 		this.locationInfoList = locationInfoList;
-		this.essentialProposerImpl = new EssentialProposerImpl(essentialMessengerImpl, hostName, quorumSize, locationInfoList);
+		this.leaderHost = locationInfoList.get(0).getHostName();
+
+		this.essentialProposerImpl = new EssentialProposerImpl(essentialMessengerImpl, hostName, quorumSize, locationInfoList, leaderHost);
 		this.essentialAcceptorImpl = new EssentialAcceptorImpl(essentialMessengerImpl, hostName, quorumSize, portNumber, locationInfoList);
 		this.essentialLearnerImpl = new EssentialLearnerImpl(essentialMessengerImpl, hostName, quorumSize);
-		this.essentialListenerImpl = new EssentialListenerImpl(portNumber, hostName, essentialMessengerImpl);
+		this.essentialListenerImpl = new EssentialListenerImpl(portNumber, hostName, essentialMessengerImpl, leaderHost);
 	}
 
 	public void run() {
@@ -73,8 +76,10 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 		return essentialProposerImpl.isLeader();
 	}
 
-	public void setLeader(boolean leader) {
-		essentialProposerImpl.setLeader(leader);
+	public void setLeader(String leaderHost) {
+		this.leaderHost = leaderHost;
+		essentialListenerImpl.setLeader(leaderHost);
+		essentialProposerImpl.setLeader(leaderHost);
 	}
 
 	//Acceptor Part

@@ -8,17 +8,21 @@ public class EssentialListenerImpl extends Thread implements EssentialListener {
 
 	int portNumber;
 	String hostName;
+	private String leaderHost;
 	EssentialMessengerImpl essentialMessengerImpl;
 
-	EssentialListenerImpl(int portNumber, String hostName, EssentialMessengerImpl essentialMessengerImpl) {
+	EssentialListenerImpl(int portNumber, String hostName, EssentialMessengerImpl essentialMessengerImpl, String leaderHost) {
 		this.portNumber = portNumber;
 		this.hostName = hostName;
 		this.essentialMessengerImpl = essentialMessengerImpl;
+		this.leaderHost = leaderHost;
 	}
 
 	public void run() {
 		startListening();
 	}
+	public String getLeader() { return leaderHost; }
+	public void setLeader(String leaderHost) { this.leaderHost = leaderHost; }
 
 	public void startListening() {
 		ServerSocket serverSocket = null;
@@ -40,7 +44,7 @@ public class EssentialListenerImpl extends Thread implements EssentialListener {
 
 			ClientHandler clientHandler = null;
 			try {
-				clientHandler = new ClientHandler(clientSocket, essentialMessengerImpl, hostName);
+				clientHandler = new ClientHandler(clientSocket, essentialMessengerImpl, hostName, leaderHost);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -19,20 +19,21 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 
     protected ArrayList<LocationInfo> locationInfoList;
 
-    protected boolean leader = false;
+    protected String leaderHost;
     protected boolean active = true;
 
-    public EssentialProposerImpl(EssentialMessenger messenger, String proposerHost, int quorumSize, ArrayList<LocationInfo> locationInfoList) {
+    public EssentialProposerImpl(EssentialMessenger messenger, String proposerHost, int quorumSize,
+                                 ArrayList<LocationInfo> locationInfoList, String leaderHost) {
         this.messenger   = messenger;
         this.proposerHost = proposerHost;
         this.quorumSize  = quorumSize;
         this.proposalID  = new ProposalID(0, proposerHost);
-        this.leader = false;
+        this.leaderHost = leaderHost;
         this.locationInfoList = locationInfoList;
     }
 
     public void receiveFromClients(ClientCommand command) {
-        if (leader) //respond to the client request
+        if (leaderHost.equals(proposerHost)) //respond to the client request
         {
             proposalID.incrementNumber();
             messenger.sendAccept(proposerHost, proposalID, proposedValue);
@@ -46,14 +47,13 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     public void setProposal(Object value) {
         if (proposedValue == null)
             proposedValue = value;
-        if (leader && active)
+        if (isLeader() && active)
             messenger.sendAccept(proposerHost, proposalID, proposedValue);
 
     }
 
     @Override
     public void prepare() {
-        leader = false;
 
         promisesReceived.clear();
 
@@ -65,7 +65,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     }
 
     public void resendAccept() {
-        if (leader && active && proposedValue != null) {
+        if (isLeader() && active && proposedValue != null) {
             messenger.sendAccept(proposerHost, proposalID, proposedValue);
         }
     }
@@ -74,7 +74,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     public void receivePromise(String acceptorUID, ProposalID proposalID,
                                ProposalID prevAcceptedID, Object prevAcceptedValue) {
 
-        if (leader || !proposalID.equals(this.proposalID) || promisesReceived.contains(acceptorUID))
+        if (isLeader() || !proposalID.equals(this.proposalID) || promisesReceived.contains(acceptorUID))
             return;
 
         promisesReceived.add(acceptorUID);
@@ -87,7 +87,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
         }
 
         if (promisesReceived.size() > quorumSize / 2) {
-            leader = true;
+            leaderHost = proposerHost;
             if (proposedValue != null)
                 messenger.sendAccept(this.proposerHost, proposalID, proposedValue);
             else
@@ -139,15 +139,15 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 	}
 
 	public boolean isLeader() {
-		return leader;
+		return leaderHost.equals(proposerHost);
 	}
 
 	public void setActive(boolean active) {
 		this.active = active;
 	}
 
-	public void setLeader(boolean leader) {
-		this.leader = leader;
+	public void setLeader(String leaderHost) {
+		this.leaderHost = leaderHost;
 	}
 
 	public Integer getRandProposal() {
@@ -178,15 +178,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 			if ((promiseMessage = messenger.getPromiseMessage(proposerHost)) != null) {
 				receivePromise(promiseMessage.acceptorHost, promiseMessage.proposalID, promiseMessage.prevAcceptedID,
 						promiseMessage.prevAcceptedValue);
-//	            System.out.println("Received Promise " + promiseMessage.fromUID + " " +
-//			                               promiseMessage.prevAcceptedValue +  " " +
-//			                               promiseMessage.prevAcceptedID + " " + promiseMessage.proposalID);
 			}
-
-//	        if (System.currentTimeMillis() > endTimeMillis) {
-//		        // do some clean-up
-//		        return;
-//	        }
 		}
 	}
 

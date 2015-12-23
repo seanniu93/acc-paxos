@@ -5,13 +5,12 @@ package paxos.essential;
  */
 public class RedirLeader {
     private String hostName;
-    private int portNumber;
+
+    RedirLeader (String hostName) {
+        this.hostName = hostName;
+    }
 
     public String getHostName() {return hostName; }
 
-    public int getPortNumber() {return portNumber; }
-
     public void setHostName(String hostName) {this.hostName = hostName; }
-
-    public void setPortNumber(int portNumber) {this.portNumber = portNumber; }
 }

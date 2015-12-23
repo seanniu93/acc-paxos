@@ -66,7 +66,6 @@ public class RunNetwork {
 					}
 					else if(fromServer instanceof RedirLeader) {
 						hostName = ((RedirLeader) fromServer).getHostName();
-						portNumber = ((RedirLeader) fromServer).getPortNumber();
 						break;
 					}
 					else if(fromServer instanceof CommandAccepted) {
