@@ -1,5 +1,7 @@
 package paxos.essential;
 
+import paxos.essential.message.ClientCommand;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
@@ -73,8 +75,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     @Override
     public void receivePromise(String acceptorUID, ProposalID proposalID,
                                ProposalID prevAcceptedID, Object prevAcceptedValue) {
-
-        if (isLeader() || !proposalID.equals(this.proposalID) || promisesReceived.contains(acceptorUID))
+	    if (isLeader() || !proposalID.equals(this.proposalID) || promisesReceived.contains(acceptorUID))
             return;
 
         promisesReceived.add(acceptorUID);
@@ -85,9 +86,9 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
             if (prevAcceptedValue != null)
                 proposedValue = prevAcceptedValue;
         }
-
+	    System.out.printf("@@@@@@@@@@@@@@@@@@@@@");
         if (promisesReceived.size() > quorumSize / 2) {
-            leaderHost = proposerHost;
+	        leaderHost = proposerHost;
             if (proposedValue != null)
                 messenger.sendAccept(this.proposerHost, proposalID, proposedValue);
             else {
@@ -156,7 +157,7 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 
 	public Integer getRandProposal() {
 		Integer newValue;
-		newValue = new Integer(ThreadLocalRandom.current().nextInt(10, 10 + 10));
+		newValue = ThreadLocalRandom.current().nextInt(10, 10 + 10);
 		System.out.println("Newly Proposed Value: " + newValue + "\n\n");
 		return newValue;
 	}

@@ -1,5 +1,7 @@
 package paxos.essential;
 
+import paxos.essential.message.ClientCommand;
+
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 

@@ -1,5 +1,7 @@
 package paxos.essential;
 
+import paxos.essential.message.ClientCommand;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -24,7 +26,8 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 		for (LocationInfo locationInfo : locationInfoList) {
 			synchronized (locationInfo.getHostName()) {
 				try (Socket socketToServer = new Socket(locationInfo.getHostName(), locationInfo.getPortNumber());
-				     ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream())) {
+				     ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+				) {
 					outputStream.writeObject(prepareMessage);
 				} catch (IOException e) {
 					System.out.println("IO Exception while broadcasting prepare: " + e + "\n");

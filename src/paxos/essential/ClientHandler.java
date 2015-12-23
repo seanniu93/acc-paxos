@@ -1,83 +1,81 @@
 package paxos.essential;
 
+import paxos.essential.message.ClientCommand;
+import paxos.essential.message.CommandReceived;
+import paxos.essential.message.RedirLeader;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class ClientHandler extends Thread {
 
-	Socket clientSocket;
+	Object obj;
 	EssentialMessengerImpl essentialMessengerImpl;
-	ObjectInputStream objectInputStream;
-	ObjectOutputStream objectOutputStream;
+	//	ObjectInputStream objectInputStream;
+//	ObjectOutputStream objectOutputStream;
 	String hostName;
 	String leaderHost;
 
-	public ClientHandler(Socket clientSocket, EssentialMessengerImpl essentialMessengerImpl, String hostName, String leaderHost)
+	public ClientHandler(Object obj, EssentialMessengerImpl essentialMessengerImpl, String hostName, String leaderHost)
 			throws IOException {
-		this.clientSocket = clientSocket;
+		this.obj = obj;
 		this.essentialMessengerImpl = essentialMessengerImpl;
 		this.hostName = hostName;
 		this.leaderHost = leaderHost;
-		objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-		objectOutputStream = new ObjectOutputStream((clientSocket.getOutputStream()));
 	}
 
-	void handleCommand(ClientCommand cmd) {
-
-	}
-
+	@Override
 	public void run() {
-		Object o = null;
+		if (obj instanceof PrepareMessage) {
+			System.out.println("Received prepare");
+			essentialMessengerImpl.addPrepareMessage((PrepareMessage) obj, hostName);
+		} else if (obj instanceof PromiseMessage) {
+			essentialMessengerImpl.addPromiseMessage((PromiseMessage) obj, hostName);
+		} else if (obj instanceof AcceptMessage) {
+			essentialMessengerImpl.addAcceptMessage((AcceptMessage) obj, hostName);
+		} else if (obj instanceof AcceptedMessage) {
+			essentialMessengerImpl.addAcceptedMessage((AcceptedMessage) obj, hostName);
+		} else if (obj instanceof ClientCommand) {
+			handleClientCommand((ClientCommand) obj);
+		} else if (obj instanceof String) {
+			System.out.println("Received object from client as a string: " + (String) obj + "\n");
+		} else {
+			System.out.println("Unknown type object sent from client\n");
+		}
+	}
+
+	private void handleClientCommand(ClientCommand cmd) {
+		ObjectOutputStream output = null;
 		try {
-			o = objectInputStream.readObject();
-			System.out.println("Read object: " + o);
+			output = new ObjectOutputStream(new Socket(cmd.getHostname(), cmd.getPort()).getOutputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		}
+		if (output == null)
+			return;
 
-		if (o == null) {
-			System.out.println("Received Message from client is null");
-		} else {
-			if (o instanceof PrepareMessage) {
-				essentialMessengerImpl.addPrepareMessage((PrepareMessage) o, hostName);
-			} else if (o instanceof PromiseMessage) {
-				essentialMessengerImpl.addPromiseMessage((PromiseMessage) o, hostName);
-			} else if (o instanceof AcceptMessage) {
-				essentialMessengerImpl.addAcceptMessage((AcceptMessage) o, hostName);
-			} else if (o instanceof AcceptedMessage) {
-				essentialMessengerImpl.addAcceptedMessage((AcceptedMessage) o, hostName);
-			} else if(o instanceof ClientCommand) {
-				if(isLeader()) {
-					try {
-						objectOutputStream.writeObject(new CommandReceived());
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					System.out.println("I am the leader but I have not implemented multipaxos yet!\n");
-					handleCommand((ClientCommand) o);
-				}
-				else {
-					System.out.println("I am not the leade, find someone else!\n");
-					RedirLeader redirMsg = new RedirLeader(leaderHost);
-					try {
-						objectOutputStream.writeObject(redirMsg);
-					}
-					catch(IOException e) {
-						e.printStackTrace();
-					}
-				}
+		if (isLeader()) {
+			try {
+				output.writeObject(new CommandReceived(hostName, 3333));
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			else if (o instanceof String) {
-				System.out.println("Received obkject from client as a string: " + o + "\n");
-			} else {
-				System.out.println("Unknown type object sent from client from client\n");
+			System.out.println("I am the leader but I have not implemented multipaxos yet!\n");
+			// TODO do stuff with command
+		} else {
+			System.out.println("I am not the leader, find someone else!\n");
+			RedirLeader redirMsg = new RedirLeader(leaderHost, 3333);
+			try {
+				output.writeObject(redirMsg);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
 
-	public boolean isLeader() { return leaderHost.equals(hostName); }
+	public boolean isLeader() {
+		return leaderHost.equals(hostName);
+	}
+
 }

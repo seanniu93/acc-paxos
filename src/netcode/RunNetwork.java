@@ -1,22 +1,37 @@
 package netcode;
 
-import com.sun.xml.internal.bind.v2.runtime.output.SAXOutput;
 import paxos.essential.*;
+import paxos.essential.message.ClientCommand;
+import paxos.essential.message.CommandAccepted;
+import paxos.essential.message.CommandReceived;
+import paxos.essential.message.RedirLeader;
 
 import java.io.*;
-import java.net.ServerSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RunNetwork {
 
-
 	public static void main(String[] args) throws IOException {
+
+		String myHostName = null;
+		try {
+			myHostName = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			System.err.println("Could not get own hostname:" + e);
+			e.printStackTrace();
+		}
+		Integer myPort = 3333;
+		if (myHostName == null)
+			System.exit(-1);
+
 		//Server
 		ArrayList<LocationInfo> locationInfoList = new ArrayList<>();
 		locationInfoList.add(new LocationInfo("frog.zoo.cs.yale.edu", 3333));
-		locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
+//		locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
 
 		int targetServerIndex = ThreadLocalRandom.current().nextInt(0, locationInfoList.size());
 		String hostName = locationInfoList.get(targetServerIndex).getHostName();
@@ -38,9 +53,7 @@ public class RunNetwork {
 				String key = cin.readLine();
 				System.out.println("Enter Value: ");
 				String value = cin.readLine();
-				ClientCommand cmd = new ClientCommand(rorw, key, value);
-
-
+				ClientCommand cmd = new ClientCommand(myHostName, myPort, rorw, key, value);
 
 				//Sending request to server
 				Socket socketToServer = new Socket(hostName, portNumber);
@@ -65,7 +78,7 @@ public class RunNetwork {
 						System.out.println("command received by server");
 					}
 					else if(fromServer instanceof RedirLeader) {
-						hostName = ((RedirLeader) fromServer).getHostName();
+						hostName = ((RedirLeader) fromServer).getHostname();
 						break;
 					}
 					else if(fromServer instanceof CommandAccepted) {

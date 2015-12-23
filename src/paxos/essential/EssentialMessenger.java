@@ -1,5 +1,7 @@
 package paxos.essential;
 
+import paxos.essential.message.ClientCommand;
+
 public interface EssentialMessenger {
 
 	void broadcastPrepare(ProposalID proposalID, String proposerHost);

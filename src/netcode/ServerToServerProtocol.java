@@ -1,6 +1,6 @@
 package netcode;
 
-import paxos.essential.ClientCommand;
+import paxos.essential.message.ClientCommand;
 
 public class ServerToServerProtocol {
 	public String processInput(Object b) {
