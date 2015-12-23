@@ -29,4 +29,8 @@ public interface EssentialMessenger {
 
 	void addAcceptedMessage(AcceptedMessage acceptedMessage, String learnerHost);
 
+	public void addClientCommand(ClientCommand cmd);
+
+	public ClientCommand getClientCommand();
+
 }

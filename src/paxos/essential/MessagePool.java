@@ -11,6 +11,7 @@ public class MessagePool {
 	ArrayList<CopyOnWriteArrayList<PromiseMessage>> promPool;
 	ArrayList<CopyOnWriteArrayList<AcceptMessage>> acceptPool;
 	ArrayList<CopyOnWriteArrayList<AcceptedMessage>> acceptedPool;
+	CopyOnWriteArrayList<ClientCommand>	clientCommands;
 
 
 	public MessagePool(int quorumSize) {
@@ -31,6 +32,7 @@ public class MessagePool {
 		for (int i = 0; i < quorumSize; i++) {
 			acceptedPool.add(new CopyOnWriteArrayList<>());
 		}
+		clientCommands = new CopyOnWriteArrayList<>();
 	}
 
 }

@@ -23,7 +23,7 @@ public class RunEssential {
 
 		ArrayList<LocationInfo> locationInfoList = new ArrayList<>();
 		locationInfoList.add(new LocationInfo("frog.zoo.cs.yale.edu", 3333));
-		//locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
+		locationInfoList.add(new LocationInfo("bumblebee.zoo.cs.yale.edu", 3333));
 		MessagePool messagePool = new MessagePool(quorumSize);
 		EssentialMessengerImpl essentialMessengerImpl = new EssentialMessengerImpl(messagePool, quorumSize,
 				locationInfoList);

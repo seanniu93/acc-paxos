@@ -10,11 +10,13 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 	MessagePool messagePool;
 	int quorumSize;
 	ArrayList<LocationInfo> locationInfoList;
+	int cid;
 
 	public EssentialMessengerImpl(MessagePool messagePool, int quorumSize, ArrayList<LocationInfo> locationInfoList) {
 		this.messagePool = messagePool;
 		this.quorumSize = quorumSize;
 		this.locationInfoList = locationInfoList;
+		cid = 0;
 	}
 
 	public void broadcastPrepare(ProposalID proposalID, String proposerHost) {
@@ -89,6 +91,22 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 		}
 	}
 
+	public void addClientCommand(ClientCommand cmd)
+	{
+		messagePool.clientCommands.add(cmd);
+		System.out.println("Client commands added to command queue in message pool");
+	}
+
+	public ClientCommand getClientCommand()
+	{
+		if(messagePool.clientCommands.size() == 0) {
+			return null;
+		}
+		else {
+			return messagePool.clientCommands.remove(0);
+		}
+	}
+
 	public PrepareMessage getPrepareMessage(String acceptorHost) {
 		int uid = findLocationInfoIndex(acceptorHost);
 		if (messagePool.prepPool.get(uid).isEmpty()) {
@@ -102,7 +120,6 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 		int uid = findLocationInfoIndex(acceptorHost);
 		messagePool.prepPool.get(uid).add(prepareMessage);
 	}
-
 
 	public PromiseMessage getPromiseMessage(String proposerHost) {
 		//System.out.println("@@@@@@@@@@@ " + proposerHost);
@@ -149,10 +166,15 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 
 
 	public void onResolution(String learnerUID, ProposalID proposalID, Object value) {
-		System.out.println("Learner " + learnerUID +
-				                   " learned value: " + value +
-				                   " from machine: " + proposalID.getUID() +
-				                   " proposal: " + proposalID.getNumber() + '\n');
+		if(value instanceof ClientCommand)
+		{
+			ClientCommand cmd = (ClientCommand) value;
+			System.out.println("Learner " + learnerUID +
+					" learned value: rorw: " + cmd.getRorw()+ " key: "+cmd.getKey() +" value: "+cmd.getValue()+
+					" from machine: " + proposalID.getUID() +
+					" proposal: " + proposalID.getNumber() + '\n');
+		}
+
 	}
 
 	private int findLocationInfoIndex(String hostname) {
@@ -165,5 +187,4 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 		}
 		return -1;
 	}
-
 }

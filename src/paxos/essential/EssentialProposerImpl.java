@@ -90,8 +90,14 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
             leaderHost = proposerHost;
             if (proposedValue != null)
                 messenger.sendAccept(this.proposerHost, proposalID, proposedValue);
-            else
-	            messenger.sendAccept(this.proposerHost, proposalID, getRandProposal());
+            else {
+                if(messenger.getClientCommand() == null) {
+                    System.out.println("The client command has not arrived yet\n");
+                }
+                else {
+                    messenger.sendAccept(this.proposerHost, proposalID, messenger.getClientCommand());
+                }
+            }
         }
     }
 
@@ -174,7 +180,12 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 		prepare();
 //		long endTimeMillis = System.currentTimeMillis() + 10000;
 		PromiseMessage promiseMessage;
-		while (true) {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        while (true) {
 			if ((promiseMessage = messenger.getPromiseMessage(proposerHost)) != null) {
 				receivePromise(promiseMessage.acceptorHost, promiseMessage.proposalID, promiseMessage.prevAcceptedID,
 						promiseMessage.prevAcceptedValue);

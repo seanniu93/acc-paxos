@@ -33,9 +33,9 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 
 	public void run() {
 		this.essentialListenerImpl.start();
-		//this.essentialProposerImpl.start();
-		//this.essentialAcceptorImpl.start();
-		//this.essentialLearnerImpl.start();
+		this.essentialProposerImpl.start();
+		this.essentialAcceptorImpl.start();
+		this.essentialLearnerImpl.start();
 	}
 
 	public boolean isActive() {
