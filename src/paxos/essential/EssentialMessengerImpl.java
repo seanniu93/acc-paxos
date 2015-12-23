@@ -1,6 +1,7 @@
 package paxos.essential;
 
 import paxos.essential.message.ClientCommand;
+import paxos.essential.message.Heartbeat;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -94,6 +95,25 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 		}
 	}
 
+	@Override
+	public void broadcastHeartbeat(String leader) {
+		Heartbeat msg = new Heartbeat(leader, 3333);
+		for (LocationInfo locationInfo : locationInfoList) {
+			synchronized (locationInfo.getHostName()) {
+				try (Socket socketToServer = new Socket(locationInfo.getHostName(), locationInfo.getPortNumber());
+				     ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream());
+				) {
+					outputStream.writeObject(msg);
+				} catch (IOException e) {
+					System.out.println("IO Exception while broadcasting prepare: " + e + "\n");
+					e.printStackTrace();
+				}
+			}
+			System.out.println("Broadcasting Prepare Message to host: " + locationInfo.getHostName() + ", port:" +
+					locationInfo.getPortNumber() + "\n");
+		}
+	}
+
 	public void addClientCommand(ClientCommand cmd)
 	{
 		messagePool.clientCommands.add(cmd);
@@ -169,15 +189,13 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 
 
 	public void onResolution(String learnerUID, ProposalID proposalID, Object value) {
-		if(value instanceof ClientCommand)
-		{
+		if(value instanceof ClientCommand) {
 			ClientCommand cmd = (ClientCommand) value;
 			System.out.println("Learner " + learnerUID +
 					" learned value: rorw: " + cmd.getRorw()+ " key: "+cmd.getKey() +" value: "+cmd.getValue()+
 					" from machine: " + proposalID.getUID() +
 					" proposal: " + proposalID.getNumber() + '\n');
 		}
-
 	}
 
 	private int findLocationInfoIndex(String hostname) {

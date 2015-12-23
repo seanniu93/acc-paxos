@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Created by Administrator on 12/18/2015.
- */
 public class EssentialProposerImpl extends Thread implements EssentialProposer {
     protected EssentialMessenger  messenger;
     protected String              proposerHost;
@@ -17,33 +14,31 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
     protected ProposalID          proposalID;
     protected Object              proposedValue;
     protected ProposalID          lastAcceptedID     = null;
-    protected HashSet<String>     promisesReceived   = new HashSet<String>();
+    protected HashSet<String>     promisesReceived   = new HashSet<>();
 
     protected ArrayList<LocationInfo> locationInfoList;
 
     protected String leaderHost;
     protected boolean active = true;
 
-    public EssentialProposerImpl(EssentialMessenger messenger, String proposerHost, int quorumSize,
-                                 ArrayList<LocationInfo> locationInfoList, String leaderHost) {
-        this.messenger   = messenger;
-        this.proposerHost = proposerHost;
-        this.quorumSize  = quorumSize;
-        this.proposalID  = new ProposalID(0, proposerHost);
-        this.leaderHost = leaderHost;
-        this.locationInfoList = locationInfoList;
-    }
+	public EssentialProposerImpl(EssentialMessenger messenger, String proposerHost, int quorumSize,
+	                             ArrayList<LocationInfo> locationInfoList, String leaderHost) {
+		this.messenger = messenger;
+		this.proposerHost = proposerHost;
+		this.quorumSize = quorumSize;
+		this.proposalID = new ProposalID(0, proposerHost);
+		this.leaderHost = leaderHost;
+		this.locationInfoList = locationInfoList;
+	}
 
-    public void receiveFromClients(ClientCommand command) {
-        if (leaderHost.equals(proposerHost)) //respond to the client request
-        {
-            proposalID.incrementNumber();
-            messenger.sendAccept(proposerHost, proposalID, proposedValue);
-        } else    //forward the message to leader for processing
-        {
-            //messenger.send_leader(proposedValue);
-        }
-    }
+	public void receiveFromClients(ClientCommand command) {
+		if (leaderHost.equals(proposerHost)) {//respond to the client request
+			proposalID.incrementNumber();
+			messenger.sendAccept(proposerHost, proposalID, proposedValue);
+		} else { //forward the message to leader for processing
+//			messenger.send_leader(proposedValue);
+		}
+	}
 
     @Override
     public void setProposal(Object value) {
@@ -56,11 +51,8 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 
     @Override
     public void prepare() {
-
         promisesReceived.clear();
-
         proposalID.incrementNumber();
-
         if (active) {
             messenger.broadcastPrepare(proposalID, proposerHost);
         }
@@ -143,14 +135,16 @@ public class EssentialProposerImpl extends Thread implements EssentialProposer {
 		return active;
 	}
 
-	public boolean isLeader() {
-		return leaderHost.equals(proposerHost);
-	}
-
 	public void setActive(boolean active) {
 		this.active = active;
 	}
 
+	@Override
+	public boolean isLeader() {
+		return leaderHost.equals(proposerHost);
+	}
+
+	@Override
 	public void setLeader(String leaderHost) {
 		this.leaderHost = leaderHost;
 	}

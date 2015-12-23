@@ -13,6 +13,8 @@ public interface EssentialMessenger {
 
 	void sendAccepted(String fromUID, ProposalID proposalID, Object acceptedValue);
 
+	void broadcastHeartbeat(String hostname);
+
 	void onResolution(String learnerUID, ProposalID proposalID, Object value);
 
 	PrepareMessage getPrepareMessage(String acceptorUID);

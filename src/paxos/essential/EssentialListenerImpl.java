@@ -11,13 +11,15 @@ public class EssentialListenerImpl extends Thread implements EssentialListener {
 	String hostName;
 	private String leaderHost;
 	EssentialMessengerImpl essentialMessengerImpl;
+	Node node;
 
 	EssentialListenerImpl(int portNumber, String hostName, EssentialMessengerImpl essentialMessengerImpl,
-	                      String leaderHost) {
+	                      String leaderHost, Node node) {
 		this.portNumber = portNumber;
 		this.hostName = hostName;
 		this.essentialMessengerImpl = essentialMessengerImpl;
 		this.leaderHost = leaderHost;
+		this.node = node;
 	}
 
 	public void run() {
@@ -61,7 +63,7 @@ public class EssentialListenerImpl extends Thread implements EssentialListener {
 
 				ClientHandler clientHandler = null;
 				try {
-					clientHandler = new ClientHandler(o, essentialMessengerImpl, hostName, leaderHost);
+					clientHandler = new ClientHandler(o, essentialMessengerImpl, hostName, leaderHost, node);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

@@ -2,6 +2,7 @@ package paxos.essential;
 
 import paxos.essential.message.ClientCommand;
 import paxos.essential.message.CommandReceived;
+import paxos.essential.message.Heartbeat;
 import paxos.essential.message.RedirLeader;
 
 import java.io.IOException;
@@ -12,17 +13,20 @@ public class ClientHandler extends Thread {
 
 	Object obj;
 	EssentialMessengerImpl essentialMessengerImpl;
-	//	ObjectInputStream objectInputStream;
+//	ObjectInputStream objectInputStream;
 //	ObjectOutputStream objectOutputStream;
 	String hostName;
 	String leaderHost;
+	Node node;
 
-	public ClientHandler(Object obj, EssentialMessengerImpl essentialMessengerImpl, String hostName, String leaderHost)
+	public ClientHandler(Object obj, EssentialMessengerImpl essentialMessengerImpl, String hostName, String leaderHost,
+	                     Node node)
 			throws IOException {
 		this.obj = obj;
 		this.essentialMessengerImpl = essentialMessengerImpl;
 		this.hostName = hostName;
 		this.leaderHost = leaderHost;
+		this.node = node;
 	}
 
 	@Override
@@ -40,6 +44,9 @@ public class ClientHandler extends Thread {
 			handleClientCommand((ClientCommand) obj);
 		} else if (obj instanceof String) {
 			System.out.println("Received object from client as a string: " + (String) obj + "\n");
+		} else if (obj instanceof Heartbeat) {
+			System.out.println("Got heartbeat from leader");
+			node.incrementHeartbeat();
 		} else {
 			System.out.println("Unknown type object sent from client\n");
 		}

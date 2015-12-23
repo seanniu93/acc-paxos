@@ -16,6 +16,8 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 	ArrayList<LocationInfo> locationInfoList;
 	String leaderHost;
 
+	int heartbeatTicks = 0;
+
 	public Node(EssentialMessengerImpl essentialMessengerImpl, String hostName, int quorumSize, int portNumber,
 	            ArrayList<LocationInfo> locationInfoList) {
 		this.essentialMessengerImpl = essentialMessengerImpl;
@@ -28,7 +30,7 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 		this.essentialProposerImpl = new EssentialProposerImpl(essentialMessengerImpl, hostName, quorumSize, locationInfoList, leaderHost);
 		this.essentialAcceptorImpl = new EssentialAcceptorImpl(essentialMessengerImpl, hostName, quorumSize, portNumber, locationInfoList);
 		this.essentialLearnerImpl = new EssentialLearnerImpl(essentialMessengerImpl, hostName, quorumSize);
-		this.essentialListenerImpl = new EssentialListenerImpl(portNumber, hostName, essentialMessengerImpl, leaderHost);
+		this.essentialListenerImpl = new EssentialListenerImpl(portNumber, hostName, essentialMessengerImpl, leaderHost, this);
 	}
 
 	public void run() {
@@ -36,6 +38,11 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 		this.essentialProposerImpl.start();
 		this.essentialAcceptorImpl.start();
 		this.essentialLearnerImpl.start();
+
+		// Heartbeat
+		startHeartbeatMonitor();
+		if (isLeader())
+			startHeartbeat();
 	}
 
 	public boolean isActive() {
@@ -125,6 +132,41 @@ public class Node extends Thread implements EssentialProposer, EssentialAcceptor
 	@Override
 	public ProposalID getFinalProposalID() {
 		return essentialLearnerImpl.getFinalProposalID();
+	}
+
+	private void startHeartbeatMonitor() {
+		new Thread(() -> {
+			while (true) {
+				// Check for heartbeats every 10 seconds
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException ignored) {
+				}
+				if (heartbeatTicks > 0) {
+					heartbeatTicks = 0;
+				} else {
+					System.out.println("Leader has failed");
+					// TODO leader has failed
+				}
+			}
+		}).start();
+	}
+
+	private void startHeartbeat() {
+		new Thread(() -> {
+			while (true) {
+				// Send heartbeat every second
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException ignored) {
+				}
+				essentialMessengerImpl.broadcastHeartbeat(hostName);
+			}
+		}).start();
+	}
+
+	public void incrementHeartbeat() {
+		heartbeatTicks++;
 	}
 
 }

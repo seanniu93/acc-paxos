@@ -8,4 +8,8 @@ public interface EssentialProposer {
 
 	void receivePromise(String fromUID, ProposalID proposalID, ProposalID prevAcceptedID, Object prevAcceptedValue);
 
+	boolean isLeader();
+
+	void setLeader(String leader);
+
 }
