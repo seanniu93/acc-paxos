@@ -48,7 +48,7 @@ public class EssentialMessengerImpl implements EssentialMessenger {
 		}
 
 		LocationInfo locationInfo = locationInfoList.get(index);
-		synchronized (locationInfo) {
+		synchronized (locationInfo.getHostName()) {
 			try (Socket socketToServer = new Socket(proposerHost, portNumber);
 			     ObjectOutputStream outputStream = new ObjectOutputStream(socketToServer.getOutputStream())) {
 				outputStream.writeObject(promiseMessage);
